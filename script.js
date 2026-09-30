@@ -82,14 +82,14 @@ const products = [
 
     {
         name: "موکا ۱۰۰٪ روبوستا",
-        price: 230000,
+        price: 280000,
         image: "11.jpg",
         category: "اسپرسو بار"
     },
 
     {
         name: "موکا ۷۰/۳۰",
-        price: 240000,
+        price: 290000,
         image: "12.jpg",
         category: "اسپرسو بار"
     },
@@ -110,18 +110,87 @@ const products = [
 
     {
         name: "آیس لمون اسپرسو",
-        price: null,
+        price: 295000,
         image: "49.jpg",
         category: "اسپرسو بار"
     },
 
     {
         name: "آفوگاتو",
-        price: null,
+        price: 310000,
         image: "50.jpg",
         category: "اسپرسو بار"
     },
 
+    {
+        name: "ایس لته 70/30",
+        price: 230000,
+        image: "51.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس لته 100 روبوستا",
+        price: 210000,
+        image: "52.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس موکا 100 روبوستا",
+        price: 320000,
+        image: "53.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس موکا 70/30",
+        price: 340000,
+        image: "54.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس امریکانو 100 روبوستا",
+        price: 170000,
+        image: "55.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس امریکانو 70/30",
+        price: 190000,
+        image: "56.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس کورتادو 100 روبوستا",
+        price: 210000,
+        image: "57.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس کورتادو 70/30",
+        price: 230000,
+        image: "58.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس کارامل ماکیاتو 100 روبوستا",
+        price: 320000,
+        image: "59.jpg",
+        category: "اسپرسو بار"
+    },
+
+    {
+        name: "ایس کارامل ماکیاتو70/30",
+        price: 340000,
+        image: "60.jpg",
+        category: "اسپرسو بار"
+    },
 
     /* =========================
        شیک
@@ -175,7 +244,7 @@ const products = [
     },
 
     {
-        name: "کوک لیون",
+        name: "کوک لیمون",
         price: 250000,
         image: "21.jpg",
         category: "اسموتی"
@@ -218,7 +287,7 @@ const products = [
 
     {
         name: "خیار سکنجبین",
-        price: null,
+        price: 280000,
         image: "27.jpg",
         category: "اسموتی"
     },
@@ -239,14 +308,14 @@ const products = [
 
     {
         name: "توایلایت",
-        price: null,
+        price: 285000,
         image: "30.jpg",
         category: "اسموتی"
     },
 
     {
         name: "وایولت",
-        price: null,
+        price: 285000,
         image: "31.jpg",
         category: "اسموتی"
     },
