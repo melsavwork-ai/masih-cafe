@@ -40,14 +40,14 @@ const products = [
 
     {
         name: "لته ۱۰۰٪ روبوستا",
-        price: 190000,
+        price: 200000,
         image: "4.jpg",
         category: "اسپرسو بار"
     },
 
     {
         name: "لته ۷۰/۳۰",
-        price: 210000,
+        price: 220000,
         image: "5.jpg",
         category: "اسپرسو بار"
     },
@@ -103,7 +103,7 @@ const products = [
 
     {
         name: "کارامل ماکیاتو ۱۰۰٪ روبوستا",
-        price: 390000,
+        price: 290000,
         image: "13.jpg",
         category: "اسپرسو بار"
     },
@@ -255,7 +255,7 @@ const products = [
 
     {
         name: "شیر موز",
-        price: 340000,
+        price: 350000,
         image: "20.jpg",
         category: "اسموتی"
     },
@@ -383,7 +383,7 @@ const products = [
 
     {
         name: "نسکافه",
-        price: 250000,
+        price: 280000,
         image: "64.jpg",
         category: "بار گرم"
     },
@@ -425,7 +425,7 @@ const products = [
 
     {
         name: "چای انگلیسی",
-        price: 180000,
+        price: 200000,
         image: "42.jpg",
         category: "بار گرم"
     },
