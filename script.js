@@ -344,21 +344,21 @@ const products = [
 
     {
         name: "سیب زمینی",
-        price: 410000,
+        price: 450000,
         image: "32.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی با پنیر",
-        price: 550000,
+        price: 595000,
         image: "33.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی ویژه",
-        price: 610000,
+        price: 650000,
         image: "34.jpg",
         category: "فرایز"
     },
