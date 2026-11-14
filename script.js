@@ -344,21 +344,21 @@ const products = [
 
     {
         name: "سیب زمینی",
-        price: 450000,
+        price: 410000,
         image: "32.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی با پنیر",
-        price: 595000,
+        price: 550000,
         image: "33.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی ویژه",
-        price: 650000,
+        price: 610000,
         image: "34.jpg",
         category: "فرایز"
     },
@@ -483,14 +483,162 @@ const products = [
         category: "پنینی"
     }
 ];
-/* ========================= دسته‌بندی‌ها ========================= */
-const categoryOrder = ["همه", "اسپرسو بار", "اسپرسو بار سرد", "شیک", "اسموتی", "فرایز", "بار گرم", "پنینی"];
-/* ========================= عناصر HTML ========================= */
-const cats = document.getElementById("cats"); const box = document.getElementById("products"); const emptyState = document.getElementById("empty-state");
-/* ========================= دسته انتخاب‌شده ========================= */
+/* =========================
+MENU CONFIGURATION
+========================== */
+
+// دسته‌های منوی کافه
+const cafeCategories = [
+    "اسپرسو بار",
+    "اسپرسو بار سرد",
+    "شیک",
+    "اسموتی",
+    "بار گرم"
+];
+
+// دسته‌های منوی غذا
+const foodCategories = [
+    "فرایز",
+    "پنینی"
+];
+
+// دسته‌بندی‌های قابل نمایش
+let categoryOrder = [];
+
+// منوی انتخاب‌شده
+let activeMenu = null;
+
+// دسته انتخاب‌شده
 let selected = "همه";
-/* ========================= قیمت ========================= */
+
+/* =========================
+HTML ELEMENTS
+========================== */
+
+const cats = document.getElementById("cats");
+
+const box = document.getElementById("products");
+
+const emptyState =
+    document.getElementById("empty-state");
+
+const menuChoiceScreen =
+    document.getElementById("menu-choice-screen");
+
+const menuTitle =
+    document.getElementById("menu-title");
+
+const menuDescription =
+    document.getElementById("menu-description");
+
+const backButton =
+    document.getElementById("back-to-menu");
+
+const menuSection =
+    document.getElementById("menu");
+
+/* =========================
+MENU SELECTION
+========================== */
+
+function chooseMenu(menu) {
+
+    activeMenu = menu;
+
+    selected = "همه";
+
+    if (menu === "cafe") {
+
+        categoryOrder = cafeCategories;
+
+        menuTitle.textContent = "منوی کافه";
+
+        menuDescription.textContent =
+            "نوشیدنی مورد علاقه‌ات رو انتخاب کن.";
+
+    }
+
+    else if (menu === "food") {
+
+        categoryOrder = foodCategories;
+
+        menuTitle.textContent = "منوی غذا";
+
+        menuDescription.textContent =
+            "غذای مورد علاقه‌ات رو انتخاب کن.";
+
+    }
+
+    menuChoiceScreen.classList.add("hidden");
+
+    document.body.classList.remove("menu-not-selected");
+
+    backButton.style.display = "block";
+
+    render();
+
+    menuSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+/* =========================
+BACK TO MENU SELECTION
+========================== */
+
+function backToMenuChoice() {
+
+    activeMenu = null;
+
+    selected = "همه";
+
+    menuChoiceScreen.classList.remove("hidden");
+
+    document.body.style.overflow = "hidden";
+
+    backButton.style.display = "none";
+
+    cats.innerHTML = "";
+
+    box.innerHTML = "";
+
+    emptyState.style.display = "none";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+
+}
+
+/* =========================
+MENU CHOICE EVENTS
+========================== */
+
+document
+    .querySelectorAll(".menu-choice-card")
+    .forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            chooseMenu(this.dataset.menu);
+
+        });
+
+    });
+backButton.addEventListener(
+    "click",
+    backToMenuChoice
+);
+
+/* =========================
+PRICE FORMAT
+========================== */
+
 function formatPrice(price) {
+
     if (price === null || price === undefined) {
         return "";
     }
@@ -500,30 +648,30 @@ function formatPrice(price) {
         + " تومان"
     );
 }
-/* ========================= دسته‌بندی‌ها ========================= */
+
+/* =========================
+RENDER CATEGORIES
+========================== */
+
 function renderCategories() {
+
+    if (!activeMenu) return;
+
     const usedCategories = [
         ...new Set(
             products.map(product => product.category)
         )
     ];
 
-    cats.innerHTML = categoryOrder
-        .filter(category => {
+    const availableCategories = categoryOrder.filter(
+        category => usedCategories.includes(category)
+    );
 
-            return (
-                category === "همه"
-                ||
-                usedCategories.includes(category)
-            );
-
-        })
+    cats.innerHTML = ["همه", ...availableCategories]
         .map(category => {
 
             const active =
-                category === selected
-                    ? "active"
-                    : "";
+                category === selected ? "active" : "";
 
             return `
             <button
@@ -538,54 +686,59 @@ function renderCategories() {
         })
         .join("");
 
-
     document
         .querySelectorAll(".category-button")
         .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                function () {
+            button.addEventListener("click", function () {
 
-                    selectCategory(
-                        this.dataset.category
-                    );
+                selectCategory(this.dataset.category);
 
-                }
-            );
+            });
 
         });
 }
-/* ========================= محصولات ========================= */
-function renderProducts() {
-    const list =
-        selected === "همه"
-            ? products
-            : products.filter(
-                product =>
-                    product.category === selected
-            );
 
+/* =========================
+RENDER PRODUCTS
+========================== */
+
+function renderProducts() {
+
+    if (!activeMenu) return;
+
+    const allowedCategories =
+        activeMenu === "cafe"
+            ? cafeCategories
+            : foodCategories;
+
+    let list = products.filter(product =>
+        allowedCategories.includes(product.category)
+    );
+
+    if (selected !== "همه") {
+
+        list = list.filter(product =>
+            product.category === selected
+        );
+
+    }
 
     if (list.length === 0) {
 
         box.innerHTML = "";
-
         emptyState.style.display = "block";
 
         return;
+
     }
 
-
     emptyState.style.display = "none";
-
 
     box.innerHTML = list
         .map(product => {
 
-            const price =
-                formatPrice(product.price);
-
+            const price = formatPrice(product.price);
 
             return `
             <article class="product-card">
@@ -601,13 +754,11 @@ function renderProducts() {
 
                 </div>
 
-
                 <div class="product-info">
 
                     <h3 class="product-name">
-                    ${product.name}
+                        ${product.name}
                     </h3>
-
 
                     ${product.description
                     ? `
@@ -617,7 +768,6 @@ function renderProducts() {
                             `
                     : ""
                 }
-
 
                     ${price
                     ? `
@@ -636,37 +786,63 @@ function renderProducts() {
         })
         .join("");
 }
-/* ========================= انتخاب دسته ========================= */
+
+/* =========================
+CATEGORY SELECTION
+========================== */
+
 function selectCategory(category) {
+
     selected = category;
 
     renderCategories();
 
     renderProducts();
 }
-/* ========================= شروع ========================= */
+
+/* =========================
+MAIN RENDER
+========================== */
+
 function render() {
+
     renderCategories();
 
     renderProducts();
 }
-/* ========================= لودر ========================= */
+
+/* =========================
+LOADER
+========================== */
+
 window.addEventListener("load", function () {
-    setTimeout(
-        function () {
 
-            const loader =
-                document.getElementById("loader");
+    setTimeout(function () {
 
-            if (loader) {
-                loader.classList.add("hidden");
-            }
+        const loader =
+            document.getElementById("loader");
 
-        },
-        600
-    );
+        if (loader) {
 
-}
-);
-/* ========================= اجرا ========================= */
-render();
+            loader.classList.add("hidden");
+
+        }
+
+    }, 600);
+});
+
+/* =========================
+INITIAL STATE
+========================== */
+
+document.body.style.overflow = "hidden";
+
+document.body.classList.add("menu-not-selected");
+
+backButton.style.display = "none";
+
+cats.innerHTML = "";
+
+box.innerHTML = "";
+
+emptyState.style.display = "none";
