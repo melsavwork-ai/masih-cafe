@@ -483,6 +483,25 @@ const products = [
         category: "پنینی"
     }
 ];
+
+/* PRELOAD ALL PRODUCT IMAGES */
+
+const productImagePreloads = [];
+
+products.forEach(product => {
+
+    const imagePath = product.image.startsWith("images/")
+        ? product.image
+        : "images/" + product.image;
+
+    const img = new Image();
+
+    img.decoding = "async";
+    img.src = imagePath;
+
+    productImagePreloads.push(img);
+
+});
 /* =========================
 MENU CONFIGURATION
 ========================== */
@@ -724,7 +743,7 @@ function renderProducts() {
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="${index < 6 ? "eager" : "lazy"}"
+                        loading="eager"
                         decoding="async"
                         fetchpriority="${index < 2 ? "high" : "auto"}"
                         onerror="this.onerror=null; this.src='images/placeholder.svg'"
