@@ -1023,11 +1023,11 @@ MENU CHOICE SCREEN
 }
 
 .menu-choice-card.cafe {
-    background-image: url("images/1.jpg");
+    background-image: url("images/65.jpg");
 }
 
 .menu-choice-card.food {
-    background-image: url("images/32.jpg");
+    background-image: url("images/66.jpg");
 }
 
 .menu-choice-card:hover {
