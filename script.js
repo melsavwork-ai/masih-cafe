@@ -691,16 +691,21 @@ RENDER PRODUCTS
 
 function renderProducts() {
 
-    if (!activeMenu) return;
 
-    const allowedCategories =
-        activeMenu === "cafe"
-            ? cafeCategories
-            : foodCategories;
 
-    let list = products.filter(product =>
-        allowedCategories.includes(product.category)
-    );
+    let list = products;
+
+    if (activeMenu === "cafe") {
+        list = products.filter(product =>
+            cafeCategories.includes(product.category)
+        );
+    }
+
+    if (activeMenu === "food") {
+        list = products.filter(product =>
+            foodCategories.includes(product.category)
+        );
+    }
 
     if (selected !== "همه") {
         list = list.filter(product =>
@@ -809,3 +814,5 @@ cats.innerHTML = "";
 box.innerHTML = "";
 
 emptyState.style.display = "none";
+
+renderProducts();
