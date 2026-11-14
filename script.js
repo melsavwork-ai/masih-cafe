@@ -490,25 +490,6 @@ const products = [
 
 const productImageCache = [];
 
-function preloadProductImages() {
-
-    products.forEach(product => {
-
-        const img = new Image();
-
-        img.decoding = "async";
-        img.src = "images/" + product.image;
-
-        productImageCache.push(img);
-
-    });
-
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    preloadProductImages
-);
 /* =========================
 MENU CONFIGURATION
 ========================== */
@@ -750,9 +731,9 @@ function renderProducts() {
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="eager"
+                        loading="lazy"
                         decoding="async"
-                        fetchpriority="${index < 2 ? "high" : "auto"}"
+                        
                         onerror="this.onerror=null; this.src='images/placeholder.svg'"
                     >
                 </div>
