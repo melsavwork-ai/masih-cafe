@@ -837,22 +837,17 @@ LOADER
 
 ========================== */
 
-window.addEventListener("load", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-    setTimeout(function () {
+    const loader = document.getElementById("loader");
 
-        const loader = document.getElementById("loader");
-
-        if (loader) {
-
+    if (loader) {
+        setTimeout(function () {
             loader.classList.add("hidden");
-
-        }
-
-    }, 600);
+        }, 150);
+    }
 
 });
-
 /* =========================
 
 INITIAL STATE
