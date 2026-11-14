@@ -692,61 +692,43 @@ function renderProducts() {
             : foodCategories;
 
     let list = products.filter(product =>
-
         allowedCategories.includes(product.category)
-
     );
 
     if (selected !== "همه") {
-
         list = list.filter(product =>
-
             product.category === selected
-
         );
-
     }
 
     if (list.length === 0) {
-
         box.innerHTML = "";
-
         emptyState.style.display = "block";
-
         return;
-
     }
 
     emptyState.style.display = "none";
 
-    box.innerHTML = list.map(product => {
+    box.innerHTML = list.map((product, index) => {
 
         const price = formatPrice(product.price);
 
-        // پشتیبانی از هر دو حالت images/1.jpg و 1.jpg
-
         const imagePath = product.image.startsWith("images/")
-
             ? product.image
-
             : "images/" + product.image;
 
         return `
-
             <article class="product-card">
 
                 <div class="product-image">
 
                     <img
-
                         src="${imagePath}"
-
                         alt="${product.name}"
-
-                        loading="lazy"
-
-                        onerror="this.src='images/placeholder.svg'"
-
+                        loading="${index < 4 ? "eager" : "lazy"}"
+                        decoding="async"
+                        fetchpriority="${index < 4 ? "high" : "auto"}"
+                        onerror="this.onerror=null; this.src='images/placeholder.svg'"
                     >
 
                 </div>
@@ -754,66 +736,25 @@ function renderProducts() {
                 <div class="product-info">
 
                     <h3 class="product-name">
-
                         ${product.name}
-
                     </h3>
 
                     ${product.description
-
-                ? `
-
-                                <p class="product-description">
-
-                                    ${product.description}
-
-                                </p>
-
-                            `
-
+                ? `<p class="product-description">${product.description}</p>`
                 : ""
-
             }
 
                     ${price
-
-                ? `
-
-                                <div class="product-price">
-
-                                    ${price}
-
-                                </div>
-
-                            `
-
+                ? `<div class="product-price">${price}</div>`
                 : ""
-
             }
 
                 </div>
 
             </article>
-
         `;
 
     }).join("");
-
-}
-
-/* =========================
-
-CATEGORY SELECTION
-
-========================== */
-
-function selectCategory(category) {
-
-    selected = category;
-
-    renderCategories();
-
-    renderProducts();
 
 }
 
