@@ -721,20 +721,17 @@ function renderProducts() {
             <article class="product-card">
 
                 <div class="product-image">
-
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="${index < 4 ? "eager" : "lazy"}"
+                        loading="${index < 6 ? "eager" : "lazy"}"
                         decoding="async"
-                        fetchpriority="${index < 4 ? "high" : "auto"}"
+                        fetchpriority="${index < 2 ? "high" : "auto"}"
                         onerror="this.onerror=null; this.src='images/placeholder.svg'"
                     >
-
                 </div>
 
                 <div class="product-info">
-
                     <h3 class="product-name">
                         ${product.name}
                     </h3>
@@ -748,7 +745,6 @@ function renderProducts() {
                 ? `<div class="product-price">${price}</div>`
                 : ""
             }
-
                 </div>
 
             </article>
@@ -785,7 +781,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (loader) {
         setTimeout(function () {
             loader.classList.add("hidden");
-        }, 150);
+        }, 200);
     }
 
 });
