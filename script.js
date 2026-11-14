@@ -484,24 +484,31 @@ const products = [
     }
 ];
 
-/* PRELOAD ALL PRODUCT IMAGES */
+/* =========================
+   PRELOAD MENU PRODUCT IMAGES
+========================= */
 
-const productImagePreloads = [];
+const productImageCache = [];
 
-products.forEach(product => {
+function preloadProductImages() {
 
-    const imagePath = product.image.startsWith("images/")
-        ? product.image
-        : "images/" + product.image;
+    products.forEach(product => {
 
-    const img = new Image();
+        const img = new Image();
 
-    img.decoding = "async";
-    img.src = imagePath;
+        img.decoding = "async";
+        img.src = "images/" + product.image;
 
-    productImagePreloads.push(img);
+        productImageCache.push(img);
 
-});
+    });
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    preloadProductImages
+);
 /* =========================
 MENU CONFIGURATION
 ========================== */
