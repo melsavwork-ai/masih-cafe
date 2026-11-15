@@ -484,13 +484,15 @@ const products = [
     }
 ];
 
+
 /* =========================================
-   CAFE MASIH - MENU ENGINE
+   CAFE MASIH - ULTRA FAST MENU ENGINE
+   Background Image Preloading
 ========================================= */
 
 "use strict";
 
-/* ---------- MENU CATEGORIES ---------- */
+/* ---------- MENU CONFIGURATION ---------- */
 
 const cafeCategories = [
     "اسپرسو بار",
@@ -507,8 +509,10 @@ const foodCategories = [
 
 /* ---------- STATE ---------- */
 
-let activeMenu = "cafe";
+let activeMenu = null;
 let selected = "همه";
+
+const PRELOAD_CONCURRENCY = 5;
 
 /* ---------- DOM ELEMENTS ---------- */
 
@@ -525,103 +529,199 @@ const menuDescription = $("#menu-description");
 const backButton = $("#back-to-menu");
 const menuSection = $("#menu");
 
-/* ---------- PRICE FORMATTER ---------- */
+/* ---------- PRICE ---------- */
 
 const priceFormatter = new Intl.NumberFormat("fa-IR");
 
 function formatPrice(price) {
+
     if (price === null || price === undefined || price === "") {
         return "";
     }
 
     return priceFormatter.format(price) + " تومان";
+
 }
 
-/* ---------- MENU HELPERS ---------- */
-
-function getCategories() {
-    return activeMenu === "cafe"
-        ? cafeCategories
-        : foodCategories;
-}
+/* =========================================
+   IMAGE PRELOADING SYSTEM
+========================================= */
 
 function getProductImage(image) {
+
     if (!image) return "images/placeholder.svg";
 
     return image.startsWith("images/")
         ? image
-        : `images/${image}`;
+        : "images/" + image;
+
+}
+
+/* Collect every image */
+
+const allMenuImages = [
+
+    ...products.map(product =>
+        getProductImage(product.image)
+    ),
+
+    "images/65.jpg",
+    "images/66.jpg",
+    "images/hero.jpg"
+
+];
+
+/* Remove duplicate images */
+
+const uniqueImages = [...new Set(allMenuImages)];
+
+/* Background image downloader */
+
+function preloadAllImages() {
+
+    let nextIndex = 0;
+
+    let activeDownloads = 0;
+
+    function loadNext() {
+
+        while (
+            activeDownloads < PRELOAD_CONCURRENCY &&
+            nextIndex < uniqueImages.length
+        ) {
+
+            const imageURL = uniqueImages[nextIndex++];
+
+            activeDownloads++;
+
+            const image = new Image();
+
+            image.decoding = "async";
+
+            if ("fetchPriority" in image) {
+                image.fetchPriority = "low";
+            }
+
+            image.onload = finish;
+            image.onerror = finish;
+
+            image.src = imageURL;
+
+        }
+
+    }
+
+    function finish() {
+
+        activeDownloads--;
+
+        loadNext();
+
+    }
+
+    loadNext();
+
+}
+
+/* =========================================
+   MENU HELPERS
+========================================= */
+
+function getCategories() {
+
+    return activeMenu === "cafe"
+        ? cafeCategories
+        : foodCategories;
+
 }
 
 /* ---------- CHOOSE MENU ---------- */
 
 function chooseMenu(menu) {
+
     if (menu !== "cafe" && menu !== "food") return;
 
-    const menuChanged = activeMenu !== menu;
-
     activeMenu = menu;
+
     selected = "همه";
 
     if (menuTitle) {
+
         menuTitle.textContent =
             menu === "cafe" ? "منوی کافه" : "منوی غذا";
+
     }
 
     if (menuDescription) {
+
         menuDescription.textContent =
             menu === "cafe"
                 ? "نوشیدنی مورد علاقه‌ات رو انتخاب کن."
                 : "غذای مورد علاقه‌ات رو انتخاب کن.";
+
     }
 
     menuChoiceScreen?.classList.add("hidden");
+
     document.body.style.overflow = "";
 
     if (backButton) {
         backButton.style.display = "block";
     }
 
-    if (menuChanged) {
-        render();
-    }
+    render();
 
     if (menuSection) {
+
         menuSection.scrollIntoView({
             behavior: "auto",
             block: "start"
         });
+
     }
+
 }
 
-/* ---------- BACK TO MENU CHOICE ---------- */
+/* ---------- BACK TO MENU ---------- */
 
 function backToMenuChoice() {
+
+    activeMenu = null;
+
     selected = "همه";
 
     menuChoiceScreen?.classList.remove("hidden");
+
     document.body.style.overflow = "hidden";
 
     if (backButton) {
         backButton.style.display = "none";
     }
 
-    render();
+    if (cats) cats.replaceChildren();
 
-    window.scrollTo({
-        top: 0,
-        behavior: "auto"
-    });
+    if (box) box.replaceChildren();
+
+    if (emptyState) {
+        emptyState.style.display = "none";
+    }
+
+    window.scrollTo(0, 0);
+
 }
 
-/* ---------- RENDER CATEGORIES ---------- */
+/* =========================================
+   CATEGORY RENDER
+========================================= */
 
 function renderCategories() {
-    if (!cats) return;
+
+    if (!cats || !activeMenu) return;
 
     const categories = ["همه", ...getCategories()];
 
     cats.innerHTML = categories.map(category => `
+
         <button
             type="button"
             class="category-button ${category === selected ? "active" : ""}"
@@ -629,29 +729,42 @@ function renderCategories() {
         >
             ${category}
         </button>
+
     `).join("");
+
 }
 
-/* ---------- RENDER PRODUCTS ---------- */
+/* =========================================
+   PRODUCT RENDER
+========================================= */
 
 function renderProducts() {
-    if (!box) return;
+
+    if (!box || !activeMenu) return;
 
     const categories = getCategories();
 
-    const list = products.filter(product =>
-        categories.includes(product.category) &&
-        (selected === "همه" || product.category === selected)
-    );
+    const list = products.filter(product => {
+
+        if (!categories.includes(product.category)) {
+            return false;
+        }
+
+        return selected === "همه" ||
+            product.category === selected;
+
+    });
 
     if (!list.length) {
-        box.innerHTML = "";
+
+        box.replaceChildren();
 
         if (emptyState) {
             emptyState.style.display = "block";
         }
 
         return;
+
     }
 
     if (emptyState) {
@@ -659,20 +772,26 @@ function renderProducts() {
     }
 
     box.innerHTML = list.map((product, index) => {
+
         const price = formatPrice(product.price);
+
         const imagePath = getProductImage(product.image);
 
         return `
+
             <article class="product-card">
 
                 <div class="product-image">
+
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="${index < 6 ? "eager" : "lazy"}"
+                        loading="${index < 5 ? "eager" : "lazy"}"
                         decoding="async"
+                        fetchpriority="${index < 5 ? "high" : "auto"}"
                         onerror="this.onerror=null;this.src='images/placeholder.svg';"
                     >
+
                 </div>
 
                 <div class="product-info">
@@ -682,63 +801,88 @@ function renderProducts() {
                     </h3>
 
                     ${price ? `
+
                         <div class="product-price">
                             ${price}
                         </div>
+
                     ` : ""}
 
                 </div>
 
             </article>
+
         `;
+
     }).join("");
+
 }
 
 /* ---------- MAIN RENDER ---------- */
 
 function render() {
+
     renderCategories();
+
     renderProducts();
+
 }
 
-/* ---------- CATEGORY CLICK ---------- */
+/* =========================================
+   EVENT DELEGATION
+========================================= */
 
 cats?.addEventListener("click", function (event) {
+
     const button = event.target.closest(".category-button");
+
+    if (!button || !cats.contains(button)) return;
+
+    const category = button.dataset.category;
+
+    if (category === selected) return;
+
+    selected = category;
+
+    render();
+
+});
+
+/* Menu selection */
+
+document.addEventListener("click", function (event) {
+
+    const button = event.target.closest(".menu-choice-card");
 
     if (!button) return;
 
-    selected = button.dataset.category;
-    render();
+    chooseMenu(button.dataset.menu);
+
 });
 
-/* ---------- MENU CHOICE CLICK ---------- */
-
-document.querySelectorAll(".menu-choice-card").forEach(button => {
-    button.addEventListener("click", function () {
-        chooseMenu(button.dataset.menu);
-    });
-});
-
-/* ---------- BACK BUTTON ---------- */
+/* Back button */
 
 backButton?.addEventListener("click", backToMenuChoice);
 
-/* ---------- LOADER ---------- */
+/* =========================================
+   LOADER
+========================================= */
 
 function hideLoader() {
+
     const loader = $("#loader");
 
     if (loader) {
         loader.classList.add("hidden");
     }
+
 }
 
-/* ---------- INITIALIZATION ---------- */
+/* =========================================
+   INITIALIZATION
+========================================= */
 
 function initializeMenu() {
-    activeMenu = "cafe";
-    selected = "همه";
 
     document.body.style.overflow = "hidden";
 
@@ -748,17 +892,33 @@ function initializeMenu() {
         backButton.style.display = "none";
     }
 
-    render();
+    if (cats) cats.replaceChildren();
+
+    if (box) box.replaceChildren();
+
+    if (emptyState) {
+        emptyState.style.display = "none";
+    }
+
+    /* Start downloading all menu images immediately */
+
+    preloadAllImages();
 
     hideLoader();
+
 }
 
 if (document.readyState === "loading") {
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeMenu,
         { once: true }
     );
+
 } else {
+
     initializeMenu();
+
 }
+
