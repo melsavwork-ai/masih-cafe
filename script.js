@@ -485,16 +485,9 @@ const products = [
 ];
 
 
-/* =========================================
-   CAFE MASIH - ULTRA FAST MENU ENGINE
-   Background Image Preloading
-========================================= */
-
-"use strict";
-
 
 /* =========================================
-   MENU CONFIGURATION
+   CAFE MASIH - MENU ENGINE
 ========================================= */
 
 "use strict";
@@ -516,7 +509,7 @@ const foodCategories = [
 
 /* ---------- STATE ---------- */
 
-let activeMenu = null;
+let activeMenu = "cafe";
 let selected = "همه";
 
 /* ---------- DOM ELEMENTS ---------- */
@@ -539,146 +532,98 @@ const menuSection = $("#menu");
 const priceFormatter = new Intl.NumberFormat("fa-IR");
 
 function formatPrice(price) {
-
     if (price === null || price === undefined || price === "") {
         return "";
     }
 
     return priceFormatter.format(price) + " تومان";
-
 }
 
-/* =========================================
-   MENU HELPERS
-========================================= */
+/* ---------- MENU HELPERS ---------- */
 
 function getCategories() {
-
     return activeMenu === "cafe"
         ? cafeCategories
         : foodCategories;
-
 }
 
 function getProductImage(image) {
-
-    if (!image) {
-        return "images/placeholder.svg";
-    }
+    if (!image) return "images/placeholder.svg";
 
     return image.startsWith("images/")
         ? image
         : `images/${image}`;
-
 }
 
-/* =========================================
-   CHOOSE MENU
-========================================= */
+/* ---------- CHOOSE MENU ---------- */
 
 function chooseMenu(menu) {
+    if (menu !== "cafe" && menu !== "food") return;
 
-    if (menu !== "cafe" && menu !== "food") {
-        return;
-    }
+    const menuChanged = activeMenu !== menu;
 
     activeMenu = menu;
-
     selected = "همه";
 
     if (menuTitle) {
-
         menuTitle.textContent =
-            menu === "cafe"
-                ? "منوی کافه"
-                : "منوی غذا";
-
+            menu === "cafe" ? "منوی کافه" : "منوی غذا";
     }
 
     if (menuDescription) {
-
         menuDescription.textContent =
             menu === "cafe"
                 ? "نوشیدنی مورد علاقه‌ات رو انتخاب کن."
                 : "غذای مورد علاقه‌ات رو انتخاب کن.";
-
     }
 
     menuChoiceScreen?.classList.add("hidden");
-
     document.body.style.overflow = "";
 
     if (backButton) {
         backButton.style.display = "block";
     }
 
-    render();
+    if (menuChanged) {
+        render();
+    }
 
     if (menuSection) {
-
         menuSection.scrollIntoView({
             behavior: "auto",
             block: "start"
         });
-
     }
-
 }
 
-/* =========================================
-   BACK TO MENU CHOICE
-========================================= */
+/* ---------- BACK TO MENU CHOICE ---------- */
 
 function backToMenuChoice() {
-
-    activeMenu = null;
-
     selected = "همه";
 
     menuChoiceScreen?.classList.remove("hidden");
-
     document.body.style.overflow = "hidden";
 
     if (backButton) {
         backButton.style.display = "none";
     }
 
-    if (cats) {
-        cats.innerHTML = "";
-    }
-
-    if (box) {
-        box.innerHTML = "";
-    }
-
-    if (emptyState) {
-        emptyState.style.display = "none";
-    }
+    render();
 
     window.scrollTo({
         top: 0,
         behavior: "auto"
     });
-
 }
 
-/* =========================================
-   RENDER CATEGORIES
-========================================= */
+/* ---------- RENDER CATEGORIES ---------- */
 
 function renderCategories() {
+    if (!cats) return;
 
-    if (!cats || !activeMenu) {
-        return;
-    }
-
-    const categories = [
-        "همه",
-        ...getCategories()
-    ];
+    const categories = ["همه", ...getCategories()];
 
     cats.innerHTML = categories.map(category => `
-
         <button
             type="button"
             class="category-button ${category === selected ? "active" : ""}"
@@ -686,39 +631,22 @@ function renderCategories() {
         >
             ${category}
         </button>
-
     `).join("");
-
 }
 
-/* =========================================
-   RENDER PRODUCTS
-========================================= */
+/* ---------- RENDER PRODUCTS ---------- */
 
 function renderProducts() {
-
-    if (!box || !activeMenu) {
-        return;
-    }
+    if (!box) return;
 
     const categories = getCategories();
 
-    const list = products.filter(product => {
-
-        if (!categories.includes(product.category)) {
-            return false;
-        }
-
-        if (selected !== "همه" && product.category !== selected) {
-            return false;
-        }
-
-        return true;
-
-    });
+    const list = products.filter(product =>
+        categories.includes(product.category) &&
+        (selected === "همه" || product.category === selected)
+    );
 
     if (!list.length) {
-
         box.innerHTML = "";
 
         if (emptyState) {
@@ -726,33 +654,27 @@ function renderProducts() {
         }
 
         return;
-
     }
 
     if (emptyState) {
         emptyState.style.display = "none";
     }
 
-    box.innerHTML = list.map(product => {
-
+    box.innerHTML = list.map((product, index) => {
         const price = formatPrice(product.price);
-
         const imagePath = getProductImage(product.image);
 
         return `
-
             <article class="product-card">
 
                 <div class="product-image">
-
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="lazy"
+                        loading="${index < 6 ? "eager" : "lazy"}"
                         decoding="async"
                         onerror="this.onerror=null;this.src='images/placeholder.svg';"
                     >
-
                 </div>
 
                 <div class="product-info">
@@ -762,95 +684,62 @@ function renderProducts() {
                     </h3>
 
                     ${price ? `
-
                         <div class="product-price">
                             ${price}
                         </div>
-
                     ` : ""}
 
                 </div>
 
             </article>
-
         `;
-
     }).join("");
-
 }
 
-/* =========================================
-   MAIN RENDER
-========================================= */
+/* ---------- MAIN RENDER ---------- */
 
 function render() {
-
     renderCategories();
-
     renderProducts();
-
 }
 
-/* =========================================
-   CATEGORY CLICK
-========================================= */
+/* ---------- CATEGORY CLICK ---------- */
 
 cats?.addEventListener("click", function (event) {
-
     const button = event.target.closest(".category-button");
 
-    if (!button) {
-        return;
-    }
+    if (!button) return;
 
     selected = button.dataset.category;
-
     render();
-
 });
 
-/* =========================================
-   MENU CHOICE CLICK
-========================================= */
+/* ---------- MENU CHOICE CLICK ---------- */
 
 document.querySelectorAll(".menu-choice-card").forEach(button => {
-
     button.addEventListener("click", function () {
-
         chooseMenu(button.dataset.menu);
-
     });
-
 });
 
-/* =========================================
-   BACK BUTTON
-========================================= */
+/* ---------- BACK BUTTON ---------- */
 
 backButton?.addEventListener("click", backToMenuChoice);
 
-/* =========================================
-   LOADER
-========================================= */
+/* ---------- LOADER ---------- */
 
 function hideLoader() {
-
     const loader = $("#loader");
 
     if (loader) {
         loader.classList.add("hidden");
     }
-
 }
 
-/* =========================================
-   INITIALIZATION
-========================================= */
+/* ---------- INITIALIZATION ---------- */
 
 function initializeMenu() {
-
-    activeMenu = null;
-
+    activeMenu = "cafe";
     selected = "همه";
 
     document.body.style.overflow = "hidden";
@@ -861,33 +750,17 @@ function initializeMenu() {
         backButton.style.display = "none";
     }
 
-    if (cats) {
-        cats.innerHTML = "";
-    }
-
-    if (box) {
-        box.innerHTML = "";
-    }
-
-    if (emptyState) {
-        emptyState.style.display = "none";
-    }
+    render();
 
     hideLoader();
-
 }
 
 if (document.readyState === "loading") {
-
     document.addEventListener(
         "DOMContentLoaded",
         initializeMenu,
         { once: true }
     );
-
 } else {
-
     initializeMenu();
-
 }
-
