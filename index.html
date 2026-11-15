@@ -23,6 +23,45 @@
 </div>
 
 
+<div class="menu-choice-screen" id="menu-choice-screen">
+
+    <div class="menu-choice-content">
+
+        <img src="images/logo.png" alt="CAFÉ MASIH" class="menu-choice-logo">
+
+        <span class="menu-choice-en">CAFÉ MASIH</span>
+
+        <h1>به کافه مسیح خوش آمدی</h1>
+
+        <p>برای مشاهده منو، یکی از گزینه‌ها رو انتخاب کن.</p>
+
+        <div class="menu-choice-grid">
+
+            <button class="menu-choice-card cafe" type="button" data-menu="cafe">
+                <span class="choice-icon">☕</span>
+                <strong>منوی کافه</strong>
+                <small>قهوه و نوشیدنی‌های گرم و سرد</small>
+                <span class="choice-arrow">←</span>
+            </button>
+
+            <button class="menu-choice-card food" type="button" data-menu="food">
+                <span class="choice-icon">🍽</span>
+                <strong>منوی غذا</strong>
+                <small>غذاها و خوراکی‌های کافه</small>
+                <span class="choice-arrow">←</span>
+            </button>
+
+        </div>
+
+        <div class="menu-choice-footer">
+            A GOOD PLACE FOR A GOOD MOOD
+        </div>
+
+    </div>
+
+</div>
+
+
 <!-- =========================
      HEADER
 ========================== -->
@@ -145,40 +184,29 @@
     ========================== -->
 
     <section class="section menu-section" id="menu">
-
         <div class="section-inner">
 
             <div class="section-title">
-
                 <span>CAFÉ MASIH MENU</span>
-
-                <h2>
-                    منوی کافه
-                </h2>
-
-                <p>
+                <h2 id="menu-title">منوی کافه</h2>
+                <p id="menu-description">
                     دسته‌بندی مورد علاقه‌ات رو انتخاب کن.
                 </p>
-
             </div>
 
-
-            <!-- دسته‌بندی‌ها -->
+            <button type="button" id="back-to-menu" class="back-to-menu">
+                ← بازگشت به انتخاب منو
+            </button>
 
             <div class="categories" id="cats"></div>
 
-
-            <!-- محصولات -->
-
             <div class="products-grid" id="products"></div>
-
 
             <div class="empty-state" id="empty-state">
                 محصولی در این دسته‌بندی وجود ندارد.
             </div>
 
         </div>
-
     </section>
 
 
