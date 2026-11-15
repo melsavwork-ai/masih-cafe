@@ -484,9 +484,14 @@ const products = [
     }
 ];
 
-/* =========================
-   MENU CONFIGURATION
-========================= */
+/* =========================================
+   CAFE MASIH - MENU ENGINE
+   Products array must remain above this code
+========================================= */
+
+"use strict";
+
+/* ---------- CONFIGURATION ---------- */
 
 const cafeCategories = [
     "اسپرسو بار",
@@ -501,37 +506,53 @@ const foodCategories = [
     "پنینی"
 ];
 
+const imagePriorityCount = 4;
+
 let activeMenu = null;
 let selected = "همه";
 
-/* =========================
-   HTML ELEMENTS
-========================= */
+/* ---------- DOM ELEMENTS ---------- */
 
-const cats = document.getElementById("cats");
-const box = document.getElementById("products");
-const emptyState = document.getElementById("empty-state");
-const menuChoiceScreen = document.getElementById("menu-choice-screen");
-const menuTitle = document.getElementById("menu-title");
-const menuDescription = document.getElementById("menu-description");
-const backButton = document.getElementById("back-to-menu");
-const menuSection = document.getElementById("menu");
+const $ = (selector) => document.querySelector(selector);
 
-/* =========================
-   PRICE FORMAT
-========================= */
+const cats = $("#cats");
+const box = $("#products");
+const emptyState = $("#empty-state");
+const menuChoiceScreen = $("#menu-choice-screen");
+const menuTitle = $("#menu-title");
+const menuDescription = $("#menu-description");
+const backButton = $("#back-to-menu");
+const menuSection = $("#menu");
+
+const priceFormatter = new Intl.NumberFormat("fa-IR");
+
+/* ---------- PRICE ---------- */
 
 function formatPrice(price) {
-    if (price === null || price === undefined) {
+    if (price === null || price === undefined || price === "") {
         return "";
     }
 
-    return new Intl.NumberFormat("fa-IR").format(price) + " تومان";
+    return priceFormatter.format(price) + " تومان";
 }
 
-/* =========================
-   MENU SELECTION
-========================= */
+/* ---------- HELPERS ---------- */
+
+function getCategories() {
+    return activeMenu === "cafe"
+        ? cafeCategories
+        : foodCategories;
+}
+
+function getProductImage(image) {
+    if (!image) return "";
+
+    return image.startsWith("images/")
+        ? image
+        : `images/${image}`;
+}
+
+/* ---------- MENU SELECTION ---------- */
 
 function chooseMenu(menu) {
     if (menu !== "cafe" && menu !== "food") return;
@@ -539,43 +560,54 @@ function chooseMenu(menu) {
     activeMenu = menu;
     selected = "همه";
 
-    if (menu === "cafe") {
-        menuTitle.textContent = "منوی کافه";
-        menuDescription.textContent =
-            "نوشیدنی مورد علاقه‌ات رو انتخاب کن.";
-    } else {
-        menuTitle.textContent = "منوی غذا";
-        menuDescription.textContent =
-            "غذای مورد علاقه‌ات رو انتخاب کن.";
+    if (menuTitle) {
+        menuTitle.textContent =
+            menu === "cafe" ? "منوی کافه" : "منوی غذا";
     }
 
-    menuChoiceScreen.classList.add("hidden");
+    if (menuDescription) {
+        menuDescription.textContent =
+            menu === "cafe"
+                ? "نوشیدنی مورد علاقه‌ات رو انتخاب کن."
+                : "غذای مورد علاقه‌ات رو انتخاب کن.";
+    }
+
+    menuChoiceScreen?.classList.add("hidden");
+
     document.body.style.overflow = "";
-    backButton.style.display = "block";
+
+    if (backButton) {
+        backButton.style.display = "block";
+    }
 
     render();
 
-    menuSection.scrollIntoView({
+    menuSection?.scrollIntoView({
         behavior: "smooth",
         block: "start"
     });
 }
 
-/* =========================
-   BACK TO MENU CHOICE
-========================= */
+/* ---------- BACK TO MENU ---------- */
 
 function backToMenuChoice() {
     activeMenu = null;
     selected = "همه";
 
-    menuChoiceScreen.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-    backButton.style.display = "none";
+    menuChoiceScreen?.classList.remove("hidden");
 
-    cats.innerHTML = "";
-    box.innerHTML = "";
-    emptyState.style.display = "none";
+    document.body.style.overflow = "hidden";
+
+    if (backButton) {
+        backButton.style.display = "none";
+    }
+
+    if (cats) cats.innerHTML = "";
+    if (box) box.innerHTML = "";
+
+    if (emptyState) {
+        emptyState.style.display = "none";
+    }
 
     window.scrollTo({
         top: 0,
@@ -583,106 +615,65 @@ function backToMenuChoice() {
     });
 }
 
-/* =========================
-   MENU EVENTS
-========================= */
-
-document.querySelectorAll(".menu-choice-card").forEach(button => {
-    button.addEventListener("click", function () {
-        chooseMenu(this.dataset.menu);
-    });
-});
-
-backButton.addEventListener("click", backToMenuChoice);
-
-/* =========================
-   RENDER CATEGORIES
-========================= */
+/* ---------- CATEGORY RENDER ---------- */
 
 function renderCategories() {
-    if (!activeMenu) return;
+    if (!cats || !activeMenu) return;
 
-    const allowedCategories =
-        activeMenu === "cafe" ? cafeCategories : foodCategories;
+    const categories = ["همه", ...getCategories()];
 
-    cats.innerHTML = ["همه", ...allowedCategories]
-        .map(category => `
-            <button
-                type="button"
-                class="category-button ${category === selected ? "active" : ""}"
-                data-category="${category}"
-            >
-                ${category}
-            </button>
-        `)
-        .join("");
+    cats.innerHTML = categories.map(category => `
+        <button
+            type="button"
+            class="category-button ${category === selected ? "active" : ""}"
+            data-category="${category}"
+        >
+            ${category}
+        </button>
+    `).join("");
 
     cats.querySelectorAll(".category-button").forEach(button => {
-        button.addEventListener("click", function () {
-            selectCategory(this.dataset.category);
+        button.addEventListener("click", () => {
+            selectCategory(button.dataset.category);
         });
     });
 }
 
-/* =========================
-   FAST PRODUCT IMAGE LOADING
-========================= */
+/* ---------- PRODUCT IMAGE SETTINGS ---------- */
 
-function loadProductImages() {
+function prepareProductImages() {
+    if (!box) return;
+
     const images = box.querySelectorAll(".product-image img");
 
     images.forEach((img, index) => {
-        img.addEventListener("error", function () {
-            if (!img.dataset.fallback) {
-                img.dataset.fallback = "true";
-                img.src = "images/placeholder.svg";
-            } else {
-                img.style.display = "none";
-            }
-        });
+        img.decoding = "async";
 
-        // تصاویر ابتدای منو با اولویت بالا
-        if (index < 4) {
+        if (index < imagePriorityCount) {
             img.loading = "eager";
             img.fetchPriority = "high";
         } else {
-            // تصاویر پایین صفحه هنگام نزدیک‌شدن بارگذاری می‌شوند
-
             img.loading = "lazy";
-
             img.fetchPriority = "auto";
-
         }
-
-        img.decoding = "async";
-
     });
-
 }
 
-/* =========================
-
-   RENDER PRODUCTS
-
-========================= */
+/* ---------- PRODUCT RENDER ---------- */
 
 function renderProducts() {
 
-    if (!activeMenu) {
+    if (!box || !activeMenu) {
 
-        box.innerHTML = "";
+        if (box) box.innerHTML = "";
 
         return;
 
     }
 
-    const allowedCategories =
-
-        activeMenu === "cafe" ? cafeCategories : foodCategories;
-
     let list = products.filter(product =>
 
-        allowedCategories.includes(product.category)
+        getCategories().includes(product.category)
 
     );
 
@@ -696,27 +687,31 @@ function renderProducts() {
 
     }
 
-    if (list.length === 0) {
+    if (!list.length) {
 
         box.innerHTML = "";
 
-        emptyState.style.display = "block";
+        if (emptyState) {
+
+            emptyState.style.display = "block";
+
+        }
 
         return;
 
     }
 
-    emptyState.style.display = "none";
+    if (emptyState) {
 
-    box.innerHTML = list.map(product => {
+        emptyState.style.display = "none";
+
+    }
+
+    box.innerHTML = list.map((product, index) => {
 
         const price = formatPrice(product.price);
 
-        const imagePath = product.image.startsWith("images/")
-
-            ? product.image
-
-            : "images/" + product.image;
+        const imagePath = getProductImage(product.image);
 
         return `
 
@@ -729,6 +724,12 @@ function renderProducts() {
                         src="${imagePath}"
 
                         alt="${product.name}"
+
+                        loading="${index < imagePriorityCount ? "eager" : "lazy"}"
+
+                        fetchpriority="${index < imagePriorityCount ? "high" : "auto"}"
+
+                        decoding="async"
 
                     >
 
@@ -758,15 +759,11 @@ function renderProducts() {
 
     }).join("");
 
-    loadProductImages();
+    prepareProductImages();
 
 }
 
-/* =========================
-
-   CATEGORY SELECTION
-
-========================= */
+/* ---------- CATEGORY SELECTION ---------- */
 
 function selectCategory(category) {
 
@@ -778,11 +775,7 @@ function selectCategory(category) {
 
 }
 
-/* =========================
-
-   MAIN RENDER
-
-========================= */
+/* ---------- MAIN RENDER ---------- */
 
 function render() {
 
@@ -792,15 +785,25 @@ function render() {
 
 }
 
-/* =========================
+/* ---------- EVENT LISTENERS ---------- */
 
-   LOADER
+document.querySelectorAll(".menu-choice-card").forEach(button => {
 
-========================= */
+    button.addEventListener("click", () => {
+
+        chooseMenu(button.dataset.menu);
+
+    });
+
+});
+
+backButton?.addEventListener("click", backToMenuChoice);
+
+/* ---------- LOADER ---------- */
 
 function hideLoader() {
 
-    const loader = document.getElementById("loader");
+    const loader = $("#loader");
 
     if (loader) {
 
@@ -812,7 +815,11 @@ function hideLoader() {
 
 if (document.readyState === "loading") {
 
-    document.addEventListener("DOMContentLoaded", hideLoader);
+    document.addEventListener("DOMContentLoaded", hideLoader, {
+
+        once: true
+
+    });
 
 } else {
 
@@ -820,20 +827,24 @@ if (document.readyState === "loading") {
 
 }
 
-/* =========================
-
-   INITIAL STATE
-
-========================= */
+/* ---------- INITIAL STATE ---------- */
 
 document.body.style.overflow = "hidden";
 
-menuChoiceScreen.classList.remove("hidden");
+menuChoiceScreen?.classList.remove("hidden");
 
-backButton.style.display = "none";
+if (backButton) {
 
-cats.innerHTML = "";
+    backButton.style.display = "none";
 
-box.innerHTML = "";
+}
 
-emptyState.style.display = "none";
+if (cats) cats.innerHTML = "";
+
+if (box) box.innerHTML = "";
+
+if (emptyState) {
+
+    emptyState.style.display = "none";
+
+}
