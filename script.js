@@ -484,9 +484,10 @@ const products = [
     }
 ];
 
+
 /* =========================================
-   CAFE MASIH - FAST MENU ENGINE
-   Optimized menu rendering and image loading
+   CAFE MASIH - ULTRA FAST MENU ENGINE
+   Background Image Preloading
 ========================================= */
 
 "use strict";
@@ -511,9 +512,11 @@ const foodCategories = [
 let activeMenu = null;
 let selected = "همه";
 
+const PRELOAD_CONCURRENCY = 5;
+
 /* ---------- DOM ELEMENTS ---------- */
 
-const $ = (selector) => document.querySelector(selector);
+const $ = selector => document.querySelector(selector);
 
 const cats = $("#cats");
 const box = $("#products");
@@ -526,7 +529,7 @@ const menuDescription = $("#menu-description");
 const backButton = $("#back-to-menu");
 const menuSection = $("#menu");
 
-/* ---------- PRICE FORMATTER ---------- */
+/* ---------- PRICE ---------- */
 
 const priceFormatter = new Intl.NumberFormat("fa-IR");
 
@@ -540,15 +543,9 @@ function formatPrice(price) {
 
 }
 
-/* ---------- MENU HELPERS ---------- */
-
-function getCategories() {
-
-    return activeMenu === "cafe"
-        ? cafeCategories
-        : foodCategories;
-
-}
+/* =========================================
+   IMAGE PRELOADING SYSTEM
+========================================= */
 
 function getProductImage(image) {
 
@@ -560,6 +557,84 @@ function getProductImage(image) {
 
 }
 
+/* Collect every image */
+
+const allMenuImages = [
+
+    ...products.map(product =>
+        getProductImage(product.image)
+    ),
+
+    "images/65.jpg",
+    "images/66.jpg",
+    "images/hero.jpg"
+
+];
+
+/* Remove duplicate images */
+
+const uniqueImages = [...new Set(allMenuImages)];
+
+/* Background image downloader */
+
+function preloadAllImages() {
+
+    let nextIndex = 0;
+
+    let activeDownloads = 0;
+
+    function loadNext() {
+
+        while (
+            activeDownloads < PRELOAD_CONCURRENCY &&
+            nextIndex < uniqueImages.length
+        ) {
+
+            const imageURL = uniqueImages[nextIndex++];
+
+            activeDownloads++;
+
+            const image = new Image();
+
+            image.decoding = "async";
+
+            if ("fetchPriority" in image) {
+                image.fetchPriority = "low";
+            }
+
+            image.onload = finish;
+            image.onerror = finish;
+
+            image.src = imageURL;
+
+        }
+
+    }
+
+    function finish() {
+
+        activeDownloads--;
+
+        loadNext();
+
+    }
+
+    loadNext();
+
+}
+
+/* =========================================
+   MENU HELPERS
+========================================= */
+
+function getCategories() {
+
+    return activeMenu === "cafe"
+        ? cafeCategories
+        : foodCategories;
+
+}
+
 /* ---------- CHOOSE MENU ---------- */
 
 function chooseMenu(menu) {
@@ -567,6 +642,7 @@ function chooseMenu(menu) {
     if (menu !== "cafe" && menu !== "food") return;
 
     activeMenu = menu;
+
     selected = "همه";
 
     if (menuTitle) {
@@ -611,6 +687,7 @@ function chooseMenu(menu) {
 function backToMenuChoice() {
 
     activeMenu = null;
+
     selected = "همه";
 
     menuChoiceScreen?.classList.remove("hidden");
@@ -633,7 +710,9 @@ function backToMenuChoice() {
 
 }
 
-/* ---------- CATEGORY RENDER ---------- */
+/* =========================================
+   CATEGORY RENDER
+========================================= */
 
 function renderCategories() {
 
@@ -644,24 +723,20 @@ function renderCategories() {
     cats.innerHTML = categories.map(category => `
 
         <button
-
             type="button"
-
             class="category-button ${category === selected ? "active" : ""}"
-
             data-category="${category}"
-
         >
-
             ${category}
-
         </button>
 
     `).join("");
 
 }
 
-/* ---------- PRODUCT RENDER ---------- */
+/* =========================================
+   PRODUCT RENDER
+========================================= */
 
 function renderProducts() {
 
@@ -672,14 +747,11 @@ function renderProducts() {
     const list = products.filter(product => {
 
         if (!categories.includes(product.category)) {
-
             return false;
-
         }
 
-        return selected === "همه"
-
-            || product.category === selected;
+        return selected === "همه" ||
+            product.category === selected;
 
     });
 
@@ -688,9 +760,7 @@ function renderProducts() {
         box.replaceChildren();
 
         if (emptyState) {
-
             emptyState.style.display = "block";
-
         }
 
         return;
@@ -698,9 +768,7 @@ function renderProducts() {
     }
 
     if (emptyState) {
-
         emptyState.style.display = "none";
-
     }
 
     box.innerHTML = list.map((product, index) => {
@@ -716,19 +784,12 @@ function renderProducts() {
                 <div class="product-image">
 
                     <img
-
                         src="${imagePath}"
-
                         alt="${product.name}"
-
-                        loading="${index === 0 ? "eager" : "lazy"}"
-
+                        loading="${index < 5 ? "eager" : "lazy"}"
                         decoding="async"
-
-                        fetchpriority="${index === 0 ? "high" : "auto"}"
-
+                        fetchpriority="${index < 5 ? "high" : "auto"}"
                         onerror="this.onerror=null;this.src='images/placeholder.svg';"
-
                     >
 
                 </div>
@@ -736,26 +797,16 @@ function renderProducts() {
                 <div class="product-info">
 
                     <h3 class="product-name">
-
                         ${product.name}
-
                     </h3>
 
-                    ${price
+                    ${price ? `
 
-                ? `
+                        <div class="product-price">
+                            ${price}
+                        </div>
 
-                            <div class="product-price">
-
-                                ${price}
-
-                            </div>
-
-                        `
-
-                : ""
-
-            }
+                    ` : ""}
 
                 </div>
 
@@ -777,9 +828,9 @@ function render() {
 
 }
 
-/* ---------- EVENT DELEGATION ---------- */
-
-// Category clicks
+/* =========================================
+   EVENT DELEGATION
+========================================= */
 
 cats?.addEventListener("click", function (event) {
 
@@ -797,7 +848,7 @@ cats?.addEventListener("click", function (event) {
 
 });
 
-// Menu selection
+/* Menu selection */
 
 document.addEventListener("click", function (event) {
 
@@ -809,25 +860,27 @@ document.addEventListener("click", function (event) {
 
 });
 
-// Back button
+/* Back button */
 
 backButton?.addEventListener("click", backToMenuChoice);
 
-/* ---------- LOADER ---------- */
+/* =========================================
+   LOADER
+========================================= */
 
 function hideLoader() {
 
     const loader = $("#loader");
 
     if (loader) {
-
         loader.classList.add("hidden");
-
     }
 
 }
 
-/* ---------- INITIALIZATION ---------- */
+/* =========================================
+   INITIALIZATION
+========================================= */
 
 function initializeMenu() {
 
@@ -836,9 +889,7 @@ function initializeMenu() {
     menuChoiceScreen?.classList.remove("hidden");
 
     if (backButton) {
-
         backButton.style.display = "none";
-
     }
 
     if (cats) cats.replaceChildren();
@@ -846,10 +897,12 @@ function initializeMenu() {
     if (box) box.replaceChildren();
 
     if (emptyState) {
-
         emptyState.style.display = "none";
-
     }
+
+    /* Start downloading all menu images immediately */
+
+    preloadAllImages();
 
     hideLoader();
 
@@ -858,13 +911,9 @@ function initializeMenu() {
 if (document.readyState === "loading") {
 
     document.addEventListener(
-
         "DOMContentLoaded",
-
         initializeMenu,
-
         { once: true }
-
     );
 
 } else {
