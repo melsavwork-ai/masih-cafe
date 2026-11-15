@@ -492,7 +492,14 @@ const products = [
 
 "use strict";
 
-/* ---------- MENU CONFIGURATION ---------- */
+
+/* =========================================
+   MENU CONFIGURATION
+========================================= */
+
+"use strict";
+
+/* ---------- MENU CATEGORIES ---------- */
 
 const cafeCategories = [
     "اسپرسو بار",
@@ -512,8 +519,6 @@ const foodCategories = [
 let activeMenu = null;
 let selected = "همه";
 
-const PRELOAD_CONCURRENCY = 5;
-
 /* ---------- DOM ELEMENTS ---------- */
 
 const $ = selector => document.querySelector(selector);
@@ -529,7 +534,7 @@ const menuDescription = $("#menu-description");
 const backButton = $("#back-to-menu");
 const menuSection = $("#menu");
 
-/* ---------- PRICE ---------- */
+/* ---------- PRICE FORMATTER ---------- */
 
 const priceFormatter = new Intl.NumberFormat("fa-IR");
 
@@ -540,86 +545,6 @@ function formatPrice(price) {
     }
 
     return priceFormatter.format(price) + " تومان";
-
-}
-
-/* =========================================
-   IMAGE PRELOADING SYSTEM
-========================================= */
-
-function getProductImage(image) {
-
-    if (!image) return "images/placeholder.svg";
-
-    return image.startsWith("images/")
-        ? image
-        : "images/" + image;
-
-}
-
-/* Collect every image */
-
-const allMenuImages = [
-
-    ...products.map(product =>
-        getProductImage(product.image)
-    ),
-
-    "images/65.jpg",
-    "images/66.jpg",
-    "images/hero.jpg"
-
-];
-
-/* Remove duplicate images */
-
-const uniqueImages = [...new Set(allMenuImages)];
-
-/* Background image downloader */
-
-function preloadAllImages() {
-
-    let nextIndex = 0;
-
-    let activeDownloads = 0;
-
-    function loadNext() {
-
-        while (
-            activeDownloads < PRELOAD_CONCURRENCY &&
-            nextIndex < uniqueImages.length
-        ) {
-
-            const imageURL = uniqueImages[nextIndex++];
-
-            activeDownloads++;
-
-            const image = new Image();
-
-            image.decoding = "async";
-
-            if ("fetchPriority" in image) {
-                image.fetchPriority = "low";
-            }
-
-            image.onload = finish;
-            image.onerror = finish;
-
-            image.src = imageURL;
-
-        }
-
-    }
-
-    function finish() {
-
-        activeDownloads--;
-
-        loadNext();
-
-    }
-
-    loadNext();
 
 }
 
@@ -635,11 +560,27 @@ function getCategories() {
 
 }
 
-/* ---------- CHOOSE MENU ---------- */
+function getProductImage(image) {
+
+    if (!image) {
+        return "images/placeholder.svg";
+    }
+
+    return image.startsWith("images/")
+        ? image
+        : `images/${image}`;
+
+}
+
+/* =========================================
+   CHOOSE MENU
+========================================= */
 
 function chooseMenu(menu) {
 
-    if (menu !== "cafe" && menu !== "food") return;
+    if (menu !== "cafe" && menu !== "food") {
+        return;
+    }
 
     activeMenu = menu;
 
@@ -648,7 +589,9 @@ function chooseMenu(menu) {
     if (menuTitle) {
 
         menuTitle.textContent =
-            menu === "cafe" ? "منوی کافه" : "منوی غذا";
+            menu === "cafe"
+                ? "منوی کافه"
+                : "منوی غذا";
 
     }
 
@@ -682,7 +625,9 @@ function chooseMenu(menu) {
 
 }
 
-/* ---------- BACK TO MENU ---------- */
+/* =========================================
+   BACK TO MENU CHOICE
+========================================= */
 
 function backToMenuChoice() {
 
@@ -698,27 +643,39 @@ function backToMenuChoice() {
         backButton.style.display = "none";
     }
 
-    if (cats) cats.replaceChildren();
+    if (cats) {
+        cats.innerHTML = "";
+    }
 
-    if (box) box.replaceChildren();
+    if (box) {
+        box.innerHTML = "";
+    }
 
     if (emptyState) {
         emptyState.style.display = "none";
     }
 
-    window.scrollTo(0, 0);
+    window.scrollTo({
+        top: 0,
+        behavior: "auto"
+    });
 
 }
 
 /* =========================================
-   CATEGORY RENDER
+   RENDER CATEGORIES
 ========================================= */
 
 function renderCategories() {
 
-    if (!cats || !activeMenu) return;
+    if (!cats || !activeMenu) {
+        return;
+    }
 
-    const categories = ["همه", ...getCategories()];
+    const categories = [
+        "همه",
+        ...getCategories()
+    ];
 
     cats.innerHTML = categories.map(category => `
 
@@ -735,12 +692,14 @@ function renderCategories() {
 }
 
 /* =========================================
-   PRODUCT RENDER
+   RENDER PRODUCTS
 ========================================= */
 
 function renderProducts() {
 
-    if (!box || !activeMenu) return;
+    if (!box || !activeMenu) {
+        return;
+    }
 
     const categories = getCategories();
 
@@ -750,14 +709,17 @@ function renderProducts() {
             return false;
         }
 
-        return selected === "همه" ||
-            product.category === selected;
+        if (selected !== "همه" && product.category !== selected) {
+            return false;
+        }
+
+        return true;
 
     });
 
     if (!list.length) {
 
-        box.replaceChildren();
+        box.innerHTML = "";
 
         if (emptyState) {
             emptyState.style.display = "block";
@@ -771,7 +733,7 @@ function renderProducts() {
         emptyState.style.display = "none";
     }
 
-    box.innerHTML = list.map((product, index) => {
+    box.innerHTML = list.map(product => {
 
         const price = formatPrice(product.price);
 
@@ -786,9 +748,8 @@ function renderProducts() {
                     <img
                         src="${imagePath}"
                         alt="${product.name}"
-                        loading="${index < 5 ? "eager" : "lazy"}"
+                        loading="lazy"
                         decoding="async"
-                        fetchpriority="${index < 5 ? "high" : "auto"}"
                         onerror="this.onerror=null;this.src='images/placeholder.svg';"
                     >
 
@@ -818,7 +779,9 @@ function renderProducts() {
 
 }
 
-/* ---------- MAIN RENDER ---------- */
+/* =========================================
+   MAIN RENDER
+========================================= */
 
 function render() {
 
@@ -829,38 +792,40 @@ function render() {
 }
 
 /* =========================================
-   EVENT DELEGATION
+   CATEGORY CLICK
 ========================================= */
 
 cats?.addEventListener("click", function (event) {
 
     const button = event.target.closest(".category-button");
 
-    if (!button || !cats.contains(button)) return;
+    if (!button) {
+        return;
+    }
 
-    const category = button.dataset.category;
-
-    if (category === selected) return;
-
-    selected = category;
+    selected = button.dataset.category;
 
     render();
 
 });
 
-/* Menu selection */
+/* =========================================
+   MENU CHOICE CLICK
+========================================= */
 
-document.addEventListener("click", function (event) {
+document.querySelectorAll(".menu-choice-card").forEach(button => {
 
-    const button = event.target.closest(".menu-choice-card");
+    button.addEventListener("click", function () {
 
-    if (!button) return;
+        chooseMenu(button.dataset.menu);
 
-    chooseMenu(button.dataset.menu);
+    });
 
 });
 
-/* Back button */
+/* =========================================
+   BACK BUTTON
+========================================= */
 
 backButton?.addEventListener("click", backToMenuChoice);
 
@@ -884,6 +849,10 @@ function hideLoader() {
 
 function initializeMenu() {
 
+    activeMenu = null;
+
+    selected = "همه";
+
     document.body.style.overflow = "hidden";
 
     menuChoiceScreen?.classList.remove("hidden");
@@ -892,17 +861,17 @@ function initializeMenu() {
         backButton.style.display = "none";
     }
 
-    if (cats) cats.replaceChildren();
+    if (cats) {
+        cats.innerHTML = "";
+    }
 
-    if (box) box.replaceChildren();
+    if (box) {
+        box.innerHTML = "";
+    }
 
     if (emptyState) {
         emptyState.style.display = "none";
     }
-
-    /* Start downloading all menu images immediately */
-
-
 
     hideLoader();
 
@@ -921,3 +890,4 @@ if (document.readyState === "loading") {
     initializeMenu();
 
 }
+
