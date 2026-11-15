@@ -486,13 +486,28 @@ const products = [
 
 
 
+
 /* =========================================
-   CAFE MASIH - MENU ENGINE
+   CAFE MASIH
+   OLD FAST RENDER ENGINE + TWO MENUS
 ========================================= */
 
 "use strict";
 
-/* ---------- MENU CATEGORIES ---------- */
+/* =========================
+   MENU CATEGORIES
+========================= */
+
+const categoryOrder = [
+    "همه",
+    "اسپرسو بار",
+    "اسپرسو بار سرد",
+    "شیک",
+    "اسموتی",
+    "فرایز",
+    "بار گرم",
+    "پنینی"
+];
 
 const cafeCategories = [
     "اسپرسو بار",
@@ -507,101 +522,378 @@ const foodCategories = [
     "پنینی"
 ];
 
-/* ---------- STATE ---------- */
+/* =========================
+   DOM ELEMENTS
+========================= */
 
-let activeMenu = "cafe";
+const cats = document.getElementById("cats");
+const box = document.getElementById("products");
+const emptyState = document.getElementById("empty-state");
+
+const menuSection = document.getElementById("menu");
+
+let menuChoiceScreen =
+    document.getElementById("menu-choice-screen");
+
+let backButton =
+    document.getElementById("back-to-menu");
+
+const menuHeading =
+    menuSection?.querySelector(".section-title h2");
+
+const menuSubtitle =
+    menuSection?.querySelector(".section-title p");
+
+/* =========================
+   STATE
+========================= */
+
 let selected = "همه";
+let activeMenu = null;
 
-/* ---------- DOM ELEMENTS ---------- */
+/* =========================
+   CREATE MENU CHOICE SCREEN
+   IF IT DOES NOT EXIST
+========================= */
 
-const $ = selector => document.querySelector(selector);
+if (!menuChoiceScreen) {
 
-const cats = $("#cats");
-const box = $("#products");
-const emptyState = $("#empty-state");
+    menuChoiceScreen = document.createElement("div");
 
-const menuChoiceScreen = $("#menu-choice-screen");
-const menuTitle = $("#menu-title");
-const menuDescription = $("#menu-description");
+    menuChoiceScreen.id = "menu-choice-screen";
+    menuChoiceScreen.className = "menu-choice-screen";
 
-const backButton = $("#back-to-menu");
-const menuSection = $("#menu");
+    menuChoiceScreen.innerHTML = `
+        <div class="menu-choice-content">
 
-/* ---------- PRICE FORMATTER ---------- */
+            <div class="menu-choice-heading">
+                <span>WELCOME TO</span>
+                <h1>CAFÉ MASIH</h1>
+                <p>منوی مورد علاقه‌ات رو انتخاب کن</p>
+            </div>
 
-const priceFormatter = new Intl.NumberFormat("fa-IR");
+            <div class="menu-choice-options">
+
+                <button
+                    type="button"
+                    class="menu-choice-card cafe"
+                    data-menu="cafe"
+                >
+                    <span>01</span>
+                    <h2>منوی کافه</h2>
+                    <p>قهوه، نوشیدنی و دسر</p>
+                </button>
+
+                <button
+                    type="button"
+                    class="menu-choice-card food"
+                    data-menu="food"
+                >
+                    <span>02</span>
+                    <h2>منوی غذا</h2>
+                    <p>فرایز و پنینی</p>
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    const header = document.querySelector(".site-header");
+
+    if (header) {
+        document.body.insertBefore(menuChoiceScreen, header);
+    } else {
+        document.body.appendChild(menuChoiceScreen);
+    }
+}
+
+/* =========================
+   CREATE BACK BUTTON
+   IF IT DOES NOT EXIST
+========================= */
+
+if (!backButton && menuSection) {
+
+    backButton = document.createElement("button");
+
+    backButton.type = "button";
+    backButton.id = "back-to-menu";
+    backButton.className = "back-to-menu";
+
+    backButton.textContent = "← بازگشت به انتخاب منو";
+
+    const sectionInner =
+        menuSection.querySelector(".section-inner");
+
+    if (sectionInner) {
+        sectionInner.insertBefore(
+            backButton,
+            sectionInner.firstChild
+        );
+    }
+
+}
+
+/* =========================
+   PRICE FORMAT
+========================= */
 
 function formatPrice(price) {
-    if (price === null || price === undefined || price === "") {
+
+    if (price === null || price === undefined) {
         return "";
     }
 
-    return priceFormatter.format(price) + " تومان";
+    return (
+        new Intl.NumberFormat("fa-IR").format(price)
+        + " تومان"
+    );
+
 }
 
-/* ---------- MENU HELPERS ---------- */
+/* =========================
+   GET ACTIVE PRODUCTS
+========================= */
 
-function getCategories() {
-    return activeMenu === "cafe"
-        ? cafeCategories
-        : foodCategories;
+function getVisibleProducts() {
+
+    if (activeMenu === "cafe") {
+
+        return products.filter(product =>
+            cafeCategories.includes(product.category)
+        );
+
+    }
+
+    if (activeMenu === "food") {
+
+        return products.filter(product =>
+            foodCategories.includes(product.category)
+        );
+
+    }
+
+    return products;
+
 }
 
-function getProductImage(image) {
-    if (!image) return "images/placeholder.svg";
+/* =========================
+   RENDER CATEGORIES
+   OLD ENGINE STYLE
+========================= */
 
-    return image.startsWith("images/")
-        ? image
-        : `images/${image}`;
+function renderCategories() {
+
+    const visibleProducts = getVisibleProducts();
+
+    const usedCategories = [
+        ...new Set(
+            visibleProducts.map(product => product.category)
+        )
+    ];
+
+    const availableCategories = categoryOrder.filter(category => {
+
+        return (
+            category === "همه" ||
+            usedCategories.includes(category)
+        );
+
+    });
+
+    cats.innerHTML = availableCategories
+        .map(category => {
+
+            const active =
+                category === selected ? "active" : "";
+
+            return `
+                <button
+                    type="button"
+                    class="category-button ${active}"
+                    data-category="${category}"
+                >
+                    ${category}
+                </button>
+            `;
+
+        })
+        .join("");
+
 }
 
-/* ---------- CHOOSE MENU ---------- */
+/* =========================
+   RENDER PRODUCTS
+   OLD ENGINE STYLE
+========================= */
+
+function renderProducts() {
+
+    const visibleProducts = getVisibleProducts();
+
+    const list =
+        selected === "همه"
+            ? visibleProducts
+            : visibleProducts.filter(
+                product => product.category === selected
+            );
+
+    if (list.length === 0) {
+
+        box.innerHTML = "";
+
+        emptyState.style.display = "block";
+
+        return;
+    }
+
+    emptyState.style.display = "none";
+
+    box.innerHTML = list
+        .map(product => {
+
+            const price = formatPrice(product.price);
+
+            return `
+                <article class="product-card">
+
+                    <div class="product-image">
+
+                        <img
+                            src="images/${product.image}"
+                            alt="${product.name}"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='images/placeholder.svg'"
+                        >
+
+                    </div>
+
+                    <div class="product-info">
+
+                        <h3 class="product-name">
+                            ${product.name}
+                        </h3>
+
+                        ${product.description
+                    ? `
+                                <p class="product-description">
+                                    ${product.description}
+                                </p>
+                            `
+                    : ""
+                }
+
+                        ${price
+                    ? `
+                                <div class="product-price">
+                                    ${price}
+                                </div>
+                            `
+                    : ""
+                }
+
+                    </div>
+
+                </article>
+            `;
+
+        })
+        .join("");
+
+}
+
+/* =========================
+   SELECT CATEGORY
+========================= */
+
+function selectCategory(category) {
+
+    selected = category;
+
+    renderCategories();
+
+    renderProducts();
+
+}
+
+/* =========================
+   MAIN RENDER
+========================= */
+
+function render() {
+
+    renderCategories();
+
+    renderProducts();
+
+}
+
+/* =========================
+   CHOOSE CAFE OR FOOD
+========================= */
 
 function chooseMenu(menu) {
-    if (menu !== "cafe" && menu !== "food") return;
 
-    const menuChanged = activeMenu !== menu;
+    if (menu !== "cafe" && menu !== "food") {
+        return;
+    }
 
     activeMenu = menu;
+
     selected = "همه";
 
-    if (menuTitle) {
-        menuTitle.textContent =
-            menu === "cafe" ? "منوی کافه" : "منوی غذا";
-    }
+    if (menuHeading) {
 
-    if (menuDescription) {
-        menuDescription.textContent =
+        menuHeading.textContent =
             menu === "cafe"
-                ? "نوشیدنی مورد علاقه‌ات رو انتخاب کن."
-                : "غذای مورد علاقه‌ات رو انتخاب کن.";
+                ? "منوی کافه"
+                : "منوی غذا";
+
     }
 
-    menuChoiceScreen?.classList.add("hidden");
+    if (menuSubtitle) {
+
+        menuSubtitle.textContent =
+            menu === "cafe"
+                ? "دسته‌بندی مورد علاقه‌ات رو انتخاب کن."
+                : "غذای مورد علاقه‌ات رو انتخاب کن.";
+
+    }
+
+    menuChoiceScreen.classList.add("hidden");
+
     document.body.style.overflow = "";
 
     if (backButton) {
         backButton.style.display = "block";
     }
 
-    if (menuChanged) {
-        render();
-    }
+    render();
 
     if (menuSection) {
+
         menuSection.scrollIntoView({
             behavior: "auto",
             block: "start"
         });
+
     }
+
 }
 
-/* ---------- BACK TO MENU CHOICE ---------- */
+/* =========================
+   BACK TO MENU CHOICE
+========================= */
 
 function backToMenuChoice() {
+
+    activeMenu = null;
+
     selected = "همه";
 
-    menuChoiceScreen?.classList.remove("hidden");
+    menuChoiceScreen.classList.remove("hidden");
+
     document.body.style.overflow = "hidden";
 
     if (backButton) {
@@ -614,153 +906,101 @@ function backToMenuChoice() {
         top: 0,
         behavior: "auto"
     });
+
 }
 
-/* ---------- RENDER CATEGORIES ---------- */
+/* =========================
+   CATEGORY CLICK
+   EVENT DELEGATION
+========================= */
 
-function renderCategories() {
-    if (!cats) return;
+cats.addEventListener("click", function (event) {
 
-    const categories = ["همه", ...getCategories()];
-
-    cats.innerHTML = categories.map(category => `
-        <button
-            type="button"
-            class="category-button ${category === selected ? "active" : ""}"
-            data-category="${category}"
-        >
-            ${category}
-        </button>
-    `).join("");
-}
-
-/* ---------- RENDER PRODUCTS ---------- */
-
-function renderProducts() {
-    if (!box) return;
-
-    const categories = getCategories();
-
-    const list = products.filter(product =>
-        categories.includes(product.category) &&
-        (selected === "همه" || product.category === selected)
-    );
-
-    if (!list.length) {
-        box.innerHTML = "";
-
-        if (emptyState) {
-            emptyState.style.display = "block";
-        }
-
-        return;
-    }
-
-    if (emptyState) {
-        emptyState.style.display = "none";
-    }
-
-    box.innerHTML = list.map((product, index) => {
-        const price = formatPrice(product.price);
-        const imagePath = getProductImage(product.image);
-
-        return `
-            <article class="product-card">
-
-                <div class="product-image">
-                    <img
-                        src="${imagePath}"
-                        alt="${product.name}"
-                        loading="${index < 6 ? "eager" : "lazy"}"
-                        decoding="async"
-                        onerror="this.onerror=null;this.src='images/placeholder.svg';"
-                    >
-                </div>
-
-                <div class="product-info">
-
-                    <h3 class="product-name">
-                        ${product.name}
-                    </h3>
-
-                    ${price ? `
-                        <div class="product-price">
-                            ${price}
-                        </div>
-                    ` : ""}
-
-                </div>
-
-            </article>
-        `;
-    }).join("");
-}
-
-/* ---------- MAIN RENDER ---------- */
-
-function render() {
-    renderCategories();
-    renderProducts();
-}
-
-/* ---------- CATEGORY CLICK ---------- */
-
-cats?.addEventListener("click", function (event) {
     const button = event.target.closest(".category-button");
 
     if (!button) return;
 
-    selected = button.dataset.category;
-    render();
+    selectCategory(button.dataset.category);
+
 });
 
-/* ---------- MENU CHOICE CLICK ---------- */
+/* =========================
+   MENU CHOICE CLICK
+========================= */
 
-document.querySelectorAll(".menu-choice-card").forEach(button => {
-    button.addEventListener("click", function () {
-        chooseMenu(button.dataset.menu);
-    });
+menuChoiceScreen.addEventListener("click", function (event) {
+
+    const button = event.target.closest(".menu-choice-card");
+
+    if (!button) return;
+
+    chooseMenu(button.dataset.menu);
+
 });
 
-/* ---------- BACK BUTTON ---------- */
+/* =========================
+   BACK BUTTON CLICK
+========================= */
 
-backButton?.addEventListener("click", backToMenuChoice);
+if (backButton) {
 
-/* ---------- LOADER ---------- */
+    backButton.addEventListener(
+        "click",
+        backToMenuChoice
+    );
 
-function hideLoader() {
-    const loader = $("#loader");
-
-    if (loader) {
-        loader.classList.add("hidden");
-    }
 }
 
-/* ---------- INITIALIZATION ---------- */
+/* =========================
+   INITIALIZATION
+========================= */
 
 function initializeMenu() {
-    activeMenu = "cafe";
+
+    activeMenu = null;
+
     selected = "همه";
 
     document.body.style.overflow = "hidden";
 
-    menuChoiceScreen?.classList.remove("hidden");
+    menuChoiceScreen.classList.remove("hidden");
 
     if (backButton) {
         backButton.style.display = "none";
     }
 
+    /*
+       IMPORTANT:
+       Render all products immediately,
+       just like the old website.
+    */
+
     render();
 
-    hideLoader();
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializeMenu,
-        { once: true }
-    );
-} else {
-    initializeMenu();
-}
+/* =========================
+   LOADER
+   OLD BEHAVIOR
+========================= */
+
+window.addEventListener("load", function () {
+
+    setTimeout(function () {
+
+        const loader = document.getElementById("loader");
+
+        if (loader) {
+            loader.classList.add("hidden");
+        }
+
+    }, 600);
+
+});
+
+/* =========================
+   START
+========================= */
+
+initializeMenu();
+
