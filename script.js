@@ -487,9 +487,11 @@ const products = [
 
 
 
+
 /* =========================================
    CAFE MASIH
-   OLD FAST RENDER ENGINE + TWO MENUS
+   ORIGINAL RENDER ENGINE
+   + TWO MENU SELECTION
 ========================================= */
 
 "use strict";
@@ -523,38 +525,26 @@ const foodCategories = [
 ];
 
 /* =========================
-   DOM ELEMENTS
+   HTML ELEMENTS
 ========================= */
 
 const cats = document.getElementById("cats");
 const box = document.getElementById("products");
 const emptyState = document.getElementById("empty-state");
-
 const menuSection = document.getElementById("menu");
+
+const menuHeading =
+    menuSection.querySelector(".section-title h2");
+
+const menuSubtitle =
+    menuSection.querySelector(".section-title p");
+
+/* =========================
+   MENU CHOICE SCREEN
+========================= */
 
 let menuChoiceScreen =
     document.getElementById("menu-choice-screen");
-
-let backButton =
-    document.getElementById("back-to-menu");
-
-const menuHeading =
-    menuSection?.querySelector(".section-title h2");
-
-const menuSubtitle =
-    menuSection?.querySelector(".section-title p");
-
-/* =========================
-   STATE
-========================= */
-
-let selected = "همه";
-let activeMenu = null;
-
-/* =========================
-   CREATE MENU CHOICE SCREEN
-   IF IT DOES NOT EXIST
-========================= */
 
 if (!menuChoiceScreen) {
 
@@ -595,7 +585,6 @@ if (!menuChoiceScreen) {
                 </button>
 
             </div>
-
         </div>
     `;
 
@@ -604,16 +593,18 @@ if (!menuChoiceScreen) {
     if (header) {
         document.body.insertBefore(menuChoiceScreen, header);
     } else {
-        document.body.appendChild(menuChoiceScreen);
+        document.body.prepend(menuChoiceScreen);
     }
 }
 
 /* =========================
-   CREATE BACK BUTTON
-   IF IT DOES NOT EXIST
+   BACK BUTTON
 ========================= */
 
-if (!backButton && menuSection) {
+let backButton =
+    document.getElementById("back-to-menu");
+
+if (!backButton) {
 
     backButton = document.createElement("button");
 
@@ -626,14 +617,18 @@ if (!backButton && menuSection) {
     const sectionInner =
         menuSection.querySelector(".section-inner");
 
-    if (sectionInner) {
-        sectionInner.insertBefore(
-            backButton,
-            sectionInner.firstChild
-        );
-    }
-
+    sectionInner.insertBefore(
+        backButton,
+        sectionInner.firstChild
+    );
 }
+
+/* =========================
+   STATE
+========================= */
+
+let selected = "همه";
+let activeMenu = null;
 
 /* =========================
    PRICE FORMAT
@@ -649,158 +644,151 @@ function formatPrice(price) {
         new Intl.NumberFormat("fa-IR").format(price)
         + " تومان"
     );
-
 }
 
 /* =========================
-   GET ACTIVE PRODUCTS
+   GET ACTIVE CATEGORIES
 ========================= */
 
-function getVisibleProducts() {
+function getActiveCategories() {
 
     if (activeMenu === "cafe") {
-
-        return products.filter(product =>
-            cafeCategories.includes(product.category)
-        );
-
+        return cafeCategories;
     }
 
     if (activeMenu === "food") {
-
-        return products.filter(product =>
-            foodCategories.includes(product.category)
-        );
-
+        return foodCategories;
     }
 
-    return products;
-
+    return categoryOrder.slice(1);
 }
 
 /* =========================
    RENDER CATEGORIES
-   OLD ENGINE STYLE
 ========================= */
 
 function renderCategories() {
 
-    const visibleProducts = getVisibleProducts();
-
-    const usedCategories = [
-        ...new Set(
-            visibleProducts.map(product => product.category)
-        )
-    ];
+    const activeCategories = getActiveCategories();
 
     const availableCategories = categoryOrder.filter(category => {
 
         return (
             category === "همه" ||
-            usedCategories.includes(category)
+            activeCategories.includes(category)
         );
 
     });
 
-    cats.innerHTML = availableCategories
-        .map(category => {
+    cats.innerHTML = availableCategories.map(category => {
 
-            const active =
-                category === selected ? "active" : "";
+        const active =
+            category === selected ? "active" : "";
 
-            return `
-                <button
-                    type="button"
-                    class="category-button ${active}"
-                    data-category="${category}"
-                >
-                    ${category}
-                </button>
-            `;
+        return `
+            <button
+                type="button"
+                class="category-button ${active}"
+                data-category="${category}"
+            >
+                ${category}
+            </button>
+        `;
 
-        })
-        .join("");
-
+    }).join("");
 }
 
 /* =========================
-   RENDER PRODUCTS
-   OLD ENGINE STYLE
+   RENDER ALL PRODUCTS
+   ONLY ONCE
 ========================= */
 
 function renderProducts() {
 
-    const visibleProducts = getVisibleProducts();
+    box.innerHTML = products.map(product => {
 
-    const list =
-        selected === "همه"
-            ? visibleProducts
-            : visibleProducts.filter(
-                product => product.category === selected
-            );
+        const price = formatPrice(product.price);
 
-    if (list.length === 0) {
+        return `
+            <article
+                class="product-card"
+                data-category="${product.category}"
+            >
 
-        box.innerHTML = "";
+                <div class="product-image">
 
-        emptyState.style.display = "block";
+                    <img
+                        src="images/${product.image}"
+                        alt="${product.name}"
+                        loading="lazy"
+                        onerror="this.onerror=null;this.src='images/placeholder.svg'"
+                    >
 
-        return;
-    }
+                </div>
 
-    emptyState.style.display = "none";
+                <div class="product-info">
 
-    box.innerHTML = list
-        .map(product => {
+                    <h3 class="product-name">
+                        ${product.name}
+                    </h3>
 
-            const price = formatPrice(product.price);
+                    ${product.description ? `
+                        <p class="product-description">
+                            ${product.description}
+                        </p>
+                    ` : ""}
 
-            return `
-                <article class="product-card">
+                    ${price ? `
+                        <div class="product-price">
+                            ${price}
+                        </div>
+                    ` : ""}
 
-                    <div class="product-image">
+                </div>
 
-                        <img
-                            src="images/${product.image}"
-                            alt="${product.name}"
-                            loading="lazy"
-                            onerror="this.onerror=null;this.src='images/placeholder.svg'"
-                        >
+            </article>
+        `;
 
-                    </div>
+    }).join("");
+}
 
-                    <div class="product-info">
+/* =========================
+   SHOW / HIDE PRODUCTS
+   WITHOUT REBUILDING DOM
+========================= */
 
-                        <h3 class="product-name">
-                            ${product.name}
-                        </h3>
+function updateVisibleProducts() {
 
-                        ${product.description
-                    ? `
-                                <p class="product-description">
-                                    ${product.description}
-                                </p>
-                            `
-                    : ""
-                }
+    const activeCategories = getActiveCategories();
 
-                        ${price
-                    ? `
-                                <div class="product-price">
-                                    ${price}
-                                </div>
-                            `
-                    : ""
-                }
+    const cards = box.querySelectorAll(".product-card");
 
-                    </div>
+    let visibleCount = 0;
 
-                </article>
-            `;
+    cards.forEach(card => {
 
-        })
-        .join("");
+        const category = card.dataset.category;
 
+        const belongsToMenu =
+            activeCategories.includes(category);
+
+        const belongsToCategory =
+            selected === "همه" ||
+            category === selected;
+
+        const shouldShow =
+            belongsToMenu && belongsToCategory;
+
+        card.style.display = shouldShow ? "" : "none";
+
+        if (shouldShow) {
+            visibleCount++;
+        }
+
+    });
+
+    emptyState.style.display =
+        visibleCount === 0 ? "block" : "none";
 }
 
 /* =========================
@@ -813,20 +801,7 @@ function selectCategory(category) {
 
     renderCategories();
 
-    renderProducts();
-
-}
-
-/* =========================
-   MAIN RENDER
-========================= */
-
-function render() {
-
-    renderCategories();
-
-    renderProducts();
-
+    updateVisibleProducts();
 }
 
 /* =========================
@@ -840,46 +815,49 @@ function chooseMenu(menu) {
     }
 
     activeMenu = menu;
-
     selected = "همه";
 
     if (menuHeading) {
-
         menuHeading.textContent =
-            menu === "cafe"
-                ? "منوی کافه"
-                : "منوی غذا";
-
+            menu === "cafe" ? "منوی کافه" : "منوی غذا";
     }
 
     if (menuSubtitle) {
-
         menuSubtitle.textContent =
             menu === "cafe"
                 ? "دسته‌بندی مورد علاقه‌ات رو انتخاب کن."
                 : "غذای مورد علاقه‌ات رو انتخاب کن.";
-
     }
+
+    renderCategories();
+
+    updateVisibleProducts();
 
     menuChoiceScreen.classList.add("hidden");
 
     document.body.style.overflow = "";
 
-    if (backButton) {
-        backButton.style.display = "block";
-    }
+    backButton.style.display = "block";
 
-    render();
+    const firstCategory =
+        menu === "cafe" ? "اسپرسو بار" : "فرایز";
 
-    if (menuSection) {
+    const firstCard = box.querySelector(
+        `.product-card[data-category="${firstCategory}"]`
+    );
 
-        menuSection.scrollIntoView({
-            behavior: "auto",
-            block: "start"
+    if (firstCard) {
+
+        const top =
+            firstCard.getBoundingClientRect().top +
+            window.scrollY - 100;
+
+        window.scrollTo({
+            top: top,
+            behavior: "auto"
         });
 
     }
-
 }
 
 /* =========================
@@ -889,29 +867,22 @@ function chooseMenu(menu) {
 function backToMenuChoice() {
 
     activeMenu = null;
-
     selected = "همه";
 
     menuChoiceScreen.classList.remove("hidden");
 
     document.body.style.overflow = "hidden";
 
-    if (backButton) {
-        backButton.style.display = "none";
-    }
-
-    render();
+    backButton.style.display = "none";
 
     window.scrollTo({
         top: 0,
         behavior: "auto"
     });
-
 }
 
 /* =========================
    CATEGORY CLICK
-   EVENT DELEGATION
 ========================= */
 
 cats.addEventListener("click", function (event) {
@@ -921,7 +892,6 @@ cats.addEventListener("click", function (event) {
     if (!button) return;
 
     selectCategory(button.dataset.category);
-
 });
 
 /* =========================
@@ -935,53 +905,19 @@ menuChoiceScreen.addEventListener("click", function (event) {
     if (!button) return;
 
     chooseMenu(button.dataset.menu);
-
 });
 
 /* =========================
    BACK BUTTON CLICK
 ========================= */
 
-if (backButton) {
-
-    backButton.addEventListener(
-        "click",
-        backToMenuChoice
-    );
-
-}
-
-/* =========================
-   INITIALIZATION
-========================= */
-
-function initializeMenu() {
-
-    activeMenu = null;
-
-    selected = "همه";
-
-    document.body.style.overflow = "hidden";
-
-    menuChoiceScreen.classList.remove("hidden");
-
-    if (backButton) {
-        backButton.style.display = "none";
-    }
-
-    /*
-       IMPORTANT:
-       Render all products immediately,
-       just like the old website.
-    */
-
-    render();
-
-}
+backButton.addEventListener(
+    "click",
+    backToMenuChoice
+);
 
 /* =========================
    LOADER
-   OLD BEHAVIOR
 ========================= */
 
 window.addEventListener("load", function () {
@@ -999,8 +935,22 @@ window.addEventListener("load", function () {
 });
 
 /* =========================
-   START
+   INITIALIZATION
 ========================= */
 
-initializeMenu();
+// تمام محصولات فقط یک بار ساخته می‌شوند
+renderProducts();
+
+// دسته‌بندی‌ها در پشت صفحه انتخاب آماده‌اند
+renderCategories();
+
+// همه محصولات زیر صفحه انتخاب باقی می‌مانند
+updateVisibleProducts();
+
+// نمایش صفحه انتخاب
+menuChoiceScreen.classList.remove("hidden");
+
+document.body.style.overflow = "hidden";
+
+backButton.style.display = "none";
 
