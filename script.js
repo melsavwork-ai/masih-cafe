@@ -485,346 +485,176 @@ const products = [
 ];
 
 /* =========================
-
    MENU CONFIGURATION
-
 ========================= */
 
 const cafeCategories = [
-
     "اسپرسو بار",
-
     "اسپرسو بار سرد",
-
     "شیک",
-
     "اسموتی",
-
     "بار گرم"
-
 ];
 
 const foodCategories = [
-
     "فرایز",
-
     "پنینی"
-
 ];
 
 let activeMenu = null;
-
 let selected = "همه";
 
 /* =========================
-
    HTML ELEMENTS
-
 ========================= */
 
 const cats = document.getElementById("cats");
-
 const box = document.getElementById("products");
-
 const emptyState = document.getElementById("empty-state");
-
-const menuChoiceScreen =
-
-    document.getElementById("menu-choice-screen");
-
-const menuTitle =
-
-    document.getElementById("menu-title");
-
-const menuDescription =
-
-    document.getElementById("menu-description");
-
-const backButton =
-
-    document.getElementById("back-to-menu");
-
-const menuSection =
-
-    document.getElementById("menu");
+const menuChoiceScreen = document.getElementById("menu-choice-screen");
+const menuTitle = document.getElementById("menu-title");
+const menuDescription = document.getElementById("menu-description");
+const backButton = document.getElementById("back-to-menu");
+const menuSection = document.getElementById("menu");
 
 /* =========================
-
-   IMAGE LOADING QUEUE
-
-========================= */
-
-const MAX_IMAGE_REQUESTS = 6;
-
-let imageQueue = [];
-
-let activeImageRequests = 0;
-
-let imageQueueVersion = 0;
-
-function startImageQueue() {
-
-    while (
-
-        activeImageRequests < MAX_IMAGE_REQUESTS &&
-
-        imageQueue.length > 0
-
-    ) {
-
-        const currentVersion = imageQueueVersion;
-
-        const img = imageQueue.shift();
-
-        if (!img || !img.dataset.src) continue;
-
-        activeImageRequests++;
-
-        const finish = () => {
-
-            activeImageRequests--;
-
-            if (currentVersion === imageQueueVersion) {
-
-                startImageQueue();
-
-            }
-
-        };
-
-        img.onload = finish;
-
-        img.onerror = function () {
-
-            img.onerror = null;
-
-            img.onload = null;
-
-            img.src = "images/placeholder.svg";
-
-            finish();
-
-        };
-
-        img.src = img.dataset.src;
-
-    }
-
-}
-
-function loadProductImages() {
-
-    imageQueueVersion++;
-
-    imageQueue = [];
-
-    const images = box.querySelectorAll(
-
-        ".product-image img[data-src]"
-
-    );
-
-    images.forEach(img => {
-
-        imageQueue.push(img);
-
-    });
-
-    startImageQueue();
-
-}
-
-/* =========================
-
    PRICE FORMAT
-
 ========================= */
 
 function formatPrice(price) {
-
     if (price === null || price === undefined) {
-
         return "";
-
     }
 
-    return (
-
-        new Intl.NumberFormat("fa-IR").format(price) +
-
-        " تومان"
-
-    );
-
+    return new Intl.NumberFormat("fa-IR").format(price) + " تومان";
 }
 
 /* =========================
-
    MENU SELECTION
-
 ========================= */
 
 function chooseMenu(menu) {
-
     if (menu !== "cafe" && menu !== "food") return;
 
     activeMenu = menu;
-
     selected = "همه";
 
     if (menu === "cafe") {
-
         menuTitle.textContent = "منوی کافه";
-
         menuDescription.textContent =
-
             "نوشیدنی مورد علاقه‌ات رو انتخاب کن.";
-
     } else {
-
         menuTitle.textContent = "منوی غذا";
-
         menuDescription.textContent =
-
             "غذای مورد علاقه‌ات رو انتخاب کن.";
-
     }
 
     menuChoiceScreen.classList.add("hidden");
-
     document.body.style.overflow = "";
-
     backButton.style.display = "block";
 
     render();
 
     menuSection.scrollIntoView({
-
         behavior: "smooth",
-
         block: "start"
-
     });
-
 }
 
 /* =========================
-
    BACK TO MENU CHOICE
-
 ========================= */
 
 function backToMenuChoice() {
-
     activeMenu = null;
-
     selected = "همه";
 
-    imageQueueVersion++;
-
-    imageQueue = [];
-
     menuChoiceScreen.classList.remove("hidden");
-
     document.body.style.overflow = "hidden";
-
     backButton.style.display = "none";
 
     cats.innerHTML = "";
-
     box.innerHTML = "";
-
     emptyState.style.display = "none";
 
     window.scrollTo({
-
         top: 0,
-
         behavior: "smooth"
-
     });
-
 }
 
 /* =========================
-
-   MENU CHOICE EVENTS
-
+   MENU EVENTS
 ========================= */
 
 document.querySelectorAll(".menu-choice-card").forEach(button => {
-
     button.addEventListener("click", function () {
-
         chooseMenu(this.dataset.menu);
-
     });
-
 });
 
-backButton.addEventListener(
-
-    "click",
-
-    backToMenuChoice
-
-);
+backButton.addEventListener("click", backToMenuChoice);
 
 /* =========================
-
    RENDER CATEGORIES
-
 ========================= */
 
 function renderCategories() {
-
     if (!activeMenu) return;
 
     const allowedCategories =
-
-        activeMenu === "cafe"
-
-            ? cafeCategories
-
-            : foodCategories;
+        activeMenu === "cafe" ? cafeCategories : foodCategories;
 
     cats.innerHTML = ["همه", ...allowedCategories]
-
-        .map(category => {
-
-            const active =
-
-                category === selected ? "active" : "";
-
-            return `
-
-                <button
-
-                    type="button"
-
-                    class="category-button ${active}"
-
-                    data-category="${category}"
-
-                >
-
-                    ${category}
-
-                </button>
-
-            `;
-
-        })
-
+        .map(category => `
+            <button
+                type="button"
+                class="category-button ${category === selected ? "active" : ""}"
+                data-category="${category}"
+            >
+                ${category}
+            </button>
+        `)
         .join("");
 
     cats.querySelectorAll(".category-button").forEach(button => {
-
         button.addEventListener("click", function () {
-
             selectCategory(this.dataset.category);
-
         });
+    });
+}
+
+/* =========================
+   FAST PRODUCT IMAGE LOADING
+========================= */
+
+function loadProductImages() {
+    const images = box.querySelectorAll(".product-image img");
+
+    images.forEach((img, index) => {
+        img.addEventListener("error", function () {
+            if (!img.dataset.fallback) {
+                img.dataset.fallback = "true";
+                img.src = "images/placeholder.svg";
+            } else {
+                img.style.display = "none";
+            }
+        });
+
+        // تصاویر ابتدای منو با اولویت بالا
+        if (index < 4) {
+            img.loading = "eager";
+            img.fetchPriority = "high";
+        } else {
+            // تصاویر پایین صفحه هنگام نزدیک‌شدن بارگذاری می‌شوند
+
+            img.loading = "lazy";
+
+            img.fetchPriority = "auto";
+
+        }
+
+        img.decoding = "async";
 
     });
 
@@ -848,11 +678,7 @@ function renderProducts() {
 
     const allowedCategories =
 
-        activeMenu === "cafe"
-
-            ? cafeCategories
-
-            : foodCategories;
+        activeMenu === "cafe" ? cafeCategories : foodCategories;
 
     let list = products.filter(product =>
 
@@ -900,11 +726,9 @@ function renderProducts() {
 
                     <img
 
-                        data-src="${imagePath}"
+                        src="${imagePath}"
 
                         alt="${product.name}"
-
-                        decoding="async"
 
                     >
 
@@ -974,21 +798,27 @@ function render() {
 
 ========================= */
 
-window.addEventListener("DOMContentLoaded", function () {
+function hideLoader() {
 
     const loader = document.getElementById("loader");
 
     if (loader) {
 
-        setTimeout(function () {
-
-            loader.classList.add("hidden");
-
-        }, 200);
+        loader.classList.add("hidden");
 
     }
 
-});
+}
+
+if (document.readyState === "loading") {
+
+    document.addEventListener("DOMContentLoaded", hideLoader);
+
+} else {
+
+    hideLoader();
+
+}
 
 /* =========================
 
