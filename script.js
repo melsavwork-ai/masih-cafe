@@ -344,21 +344,21 @@ const products = [
 
     {
         name: "سیب زمینی",
-        price: 410000,
+        price: 450000,
         image: "32.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی با پنیر",
-        price: 550000,
+        price: 595000,
         image: "33.jpg",
         category: "فرایز"
     },
 
     {
         name: "سیب زمینی ویژه",
-        price: 610000,
+        price: 650000,
         image: "34.jpg",
         category: "فرایز"
     },
@@ -483,159 +483,14 @@ const products = [
         category: "پنینی"
     }
 ];
-
-
-
-
-
-/* =========================================
-   CAFE MASIH
-   ORIGINAL RENDER ENGINE
-   + TWO MENU SELECTION
-========================================= */
-
-"use strict";
-
-/* =========================
-   MENU CATEGORIES
-========================= */
-
-const categoryOrder = [
-    "همه",
-    "اسپرسو بار",
-    "اسپرسو بار سرد",
-    "شیک",
-    "اسموتی",
-    "فرایز",
-    "بار گرم",
-    "پنینی"
-];
-
-const cafeCategories = [
-    "اسپرسو بار",
-    "اسپرسو بار سرد",
-    "شیک",
-    "اسموتی",
-    "بار گرم"
-];
-
-const foodCategories = [
-    "فرایز",
-    "پنینی"
-];
-
-/* =========================
-   HTML ELEMENTS
-========================= */
-
-const cats = document.getElementById("cats");
-const box = document.getElementById("products");
-const emptyState = document.getElementById("empty-state");
-const menuSection = document.getElementById("menu");
-
-const menuHeading =
-    menuSection.querySelector(".section-title h2");
-
-const menuSubtitle =
-    menuSection.querySelector(".section-title p");
-
-/* =========================
-   MENU CHOICE SCREEN
-========================= */
-
-let menuChoiceScreen =
-    document.getElementById("menu-choice-screen");
-
-if (!menuChoiceScreen) {
-
-    menuChoiceScreen = document.createElement("div");
-
-    menuChoiceScreen.id = "menu-choice-screen";
-    menuChoiceScreen.className = "menu-choice-screen";
-
-    menuChoiceScreen.innerHTML = `
-        <div class="menu-choice-content">
-
-            <div class="menu-choice-heading">
-                <span>WELCOME TO</span>
-                <h1>CAFÉ MASIH</h1>
-                <p>منوی مورد علاقه‌ات رو انتخاب کن</p>
-            </div>
-
-            <div class="menu-choice-options">
-
-                <button
-                    type="button"
-                    class="menu-choice-card cafe"
-                    data-menu="cafe"
-                >
-                    <span>01</span>
-                    <h2>منوی کافه</h2>
-                    <p>قهوه، نوشیدنی و دسر</p>
-                </button>
-
-                <button
-                    type="button"
-                    class="menu-choice-card food"
-                    data-menu="food"
-                >
-                    <span>02</span>
-                    <h2>منوی غذا</h2>
-                    <p>فرایز و پنینی</p>
-                </button>
-
-            </div>
-        </div>
-    `;
-
-    const header = document.querySelector(".site-header");
-
-    if (header) {
-        document.body.insertBefore(menuChoiceScreen, header);
-    } else {
-        document.body.prepend(menuChoiceScreen);
-    }
-}
-
-/* =========================
-   BACK BUTTON
-========================= */
-
-let backButton =
-    document.getElementById("back-to-menu");
-
-if (!backButton) {
-
-    backButton = document.createElement("button");
-
-    backButton.type = "button";
-    backButton.id = "back-to-menu";
-    backButton.className = "back-to-menu";
-
-    backButton.textContent = "← بازگشت به انتخاب منو";
-
-    const sectionInner =
-        menuSection.querySelector(".section-inner");
-
-    sectionInner.insertBefore(
-        backButton,
-        sectionInner.firstChild
-    );
-}
-
-/* =========================
-   STATE
-========================= */
-
+/* ========================= دسته‌بندی‌ها ========================= */
+const categoryOrder = ["همه", "اسپرسو بار", "اسپرسو بار سرد", "شیک", "اسموتی", "فرایز", "بار گرم", "پنینی"];
+/* ========================= عناصر HTML ========================= */
+const cats = document.getElementById("cats"); const box = document.getElementById("products"); const emptyState = document.getElementById("empty-state");
+/* ========================= دسته انتخاب‌شده ========================= */
 let selected = "همه";
-let activeMenu = null;
-
-/* =========================
-   PRICE FORMAT
-========================= */
-
+/* ========================= قیمت ========================= */
 function formatPrice(price) {
-
     if (price === null || price === undefined) {
         return "";
     }
@@ -645,47 +500,32 @@ function formatPrice(price) {
         + " تومان"
     );
 }
-
-/* =========================
-   GET ACTIVE CATEGORIES
-========================= */
-
-function getActiveCategories() {
-
-    if (activeMenu === "cafe") {
-        return cafeCategories;
-    }
-
-    if (activeMenu === "food") {
-        return foodCategories;
-    }
-
-    return categoryOrder.slice(1);
-}
-
-/* =========================
-   RENDER CATEGORIES
-========================= */
-
+/* ========================= دسته‌بندی‌ها ========================= */
 function renderCategories() {
+    const usedCategories = [
+        ...new Set(
+            products.map(product => product.category)
+        )
+    ];
 
-    const activeCategories = getActiveCategories();
+    cats.innerHTML = categoryOrder
+        .filter(category => {
 
-    const availableCategories = categoryOrder.filter(category => {
+            return (
+                category === "همه"
+                ||
+                usedCategories.includes(category)
+            );
 
-        return (
-            category === "همه" ||
-            activeCategories.includes(category)
-        );
+        })
+        .map(category => {
 
-    });
+            const active =
+                category === selected
+                    ? "active"
+                    : "";
 
-    cats.innerHTML = availableCategories.map(category => {
-
-        const active =
-            category === selected ? "active" : "";
-
-        return `
+            return `
             <button
                 type="button"
                 class="category-button ${active}"
@@ -695,25 +535,60 @@ function renderCategories() {
             </button>
         `;
 
-    }).join("");
+        })
+        .join("");
+
+
+    document
+        .querySelectorAll(".category-button")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    selectCategory(
+                        this.dataset.category
+                    );
+
+                }
+            );
+
+        });
 }
-
-/* =========================
-   RENDER ALL PRODUCTS
-   ONLY ONCE
-========================= */
-
+/* ========================= محصولات ========================= */
 function renderProducts() {
+    const list =
+        selected === "همه"
+            ? products
+            : products.filter(
+                product =>
+                    product.category === selected
+            );
 
-    box.innerHTML = products.map(product => {
 
-        const price = formatPrice(product.price);
+    if (list.length === 0) {
 
-        return `
-            <article
-                class="product-card"
-                data-category="${product.category}"
-            >
+        box.innerHTML = "";
+
+        emptyState.style.display = "block";
+
+        return;
+    }
+
+
+    emptyState.style.display = "none";
+
+
+    box.innerHTML = list
+        .map(product => {
+
+            const price =
+                formatPrice(product.price);
+
+
+            return `
+            <article class="product-card">
 
                 <div class="product-image">
 
@@ -721,236 +596,77 @@ function renderProducts() {
                         src="images/${product.image}"
                         alt="${product.name}"
                         loading="lazy"
-                        onerror="this.onerror=null;this.src='images/placeholder.svg'"
+                        onerror="this.src='images/placeholder.svg'"
                     >
 
                 </div>
 
+
                 <div class="product-info">
 
                     <h3 class="product-name">
-                        ${product.name}
+                    ${product.name}
                     </h3>
 
-                    ${product.description ? `
-                        <p class="product-description">
-                            ${product.description}
-                        </p>
-                    ` : ""}
 
-                    ${price ? `
-                        <div class="product-price">
-                            ${price}
-                        </div>
-                    ` : ""}
+                    ${product.description
+                    ? `
+                                <p class="product-description">
+                                    ${product.description}
+                                </p>
+                            `
+                    : ""
+                }
+
+
+                    ${price
+                    ? `
+                                <div class="product-price">
+                                    ${price}
+                                </div>
+                            `
+                    : ""
+                }
 
                 </div>
 
             </article>
         `;
 
-    }).join("");
+        })
+        .join("");
 }
-
-/* =========================
-   SHOW / HIDE PRODUCTS
-   WITHOUT REBUILDING DOM
-========================= */
-
-function updateVisibleProducts() {
-
-    const activeCategories = getActiveCategories();
-
-    const cards = box.querySelectorAll(".product-card");
-
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-
-        const category = card.dataset.category;
-
-        const belongsToMenu =
-            activeCategories.includes(category);
-
-        const belongsToCategory =
-            selected === "همه" ||
-            category === selected;
-
-        const shouldShow =
-            belongsToMenu && belongsToCategory;
-
-        card.style.display = shouldShow ? "" : "none";
-
-        if (shouldShow) {
-            visibleCount++;
-        }
-
-    });
-
-    emptyState.style.display =
-        visibleCount === 0 ? "block" : "none";
-}
-
-/* =========================
-   SELECT CATEGORY
-========================= */
-
+/* ========================= انتخاب دسته ========================= */
 function selectCategory(category) {
-
     selected = category;
 
     renderCategories();
 
-    updateVisibleProducts();
+    renderProducts();
 }
-
-/* =========================
-   CHOOSE CAFE OR FOOD
-========================= */
-
-function chooseMenu(menu) {
-
-    if (menu !== "cafe" && menu !== "food") {
-        return;
-    }
-
-    activeMenu = menu;
-    selected = "همه";
-
-    if (menuHeading) {
-        menuHeading.textContent =
-            menu === "cafe" ? "منوی کافه" : "منوی غذا";
-    }
-
-    if (menuSubtitle) {
-        menuSubtitle.textContent =
-            menu === "cafe"
-                ? "دسته‌بندی مورد علاقه‌ات رو انتخاب کن."
-                : "غذای مورد علاقه‌ات رو انتخاب کن.";
-    }
-
+/* ========================= شروع ========================= */
+function render() {
     renderCategories();
 
-    updateVisibleProducts();
+    renderProducts();
+}
+/* ========================= لودر ========================= */
+window.addEventListener("load", function () {
+    setTimeout(
+        function () {
 
-    menuChoiceScreen.classList.add("hidden");
+            const loader =
+                document.getElementById("loader");
 
-    document.body.style.overflow = "";
+            if (loader) {
+                loader.classList.add("hidden");
+            }
 
-    backButton.style.display = "block";
-
-    const firstCategory =
-        menu === "cafe" ? "اسپرسو بار" : "فرایز";
-
-    const firstCard = box.querySelector(
-        `.product-card[data-category="${firstCategory}"]`
+        },
+        600
     );
 
-    if (firstCard) {
-
-        const top =
-            firstCard.getBoundingClientRect().top +
-            window.scrollY - 100;
-
-        window.scrollTo({
-            top: top,
-            behavior: "auto"
-        });
-
-    }
 }
-
-/* =========================
-   BACK TO MENU CHOICE
-========================= */
-
-function backToMenuChoice() {
-
-    activeMenu = null;
-    selected = "همه";
-
-    menuChoiceScreen.classList.remove("hidden");
-
-    document.body.style.overflow = "hidden";
-
-    backButton.style.display = "none";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "auto"
-    });
-}
-
-/* =========================
-   CATEGORY CLICK
-========================= */
-
-cats.addEventListener("click", function (event) {
-
-    const button = event.target.closest(".category-button");
-
-    if (!button) return;
-
-    selectCategory(button.dataset.category);
-});
-
-/* =========================
-   MENU CHOICE CLICK
-========================= */
-
-menuChoiceScreen.addEventListener("click", function (event) {
-
-    const button = event.target.closest(".menu-choice-card");
-
-    if (!button) return;
-
-    chooseMenu(button.dataset.menu);
-});
-
-/* =========================
-   BACK BUTTON CLICK
-========================= */
-
-backButton.addEventListener(
-    "click",
-    backToMenuChoice
 );
-
-/* =========================
-   LOADER
-========================= */
-
-window.addEventListener("load", function () {
-
-    setTimeout(function () {
-
-        const loader = document.getElementById("loader");
-
-        if (loader) {
-            loader.classList.add("hidden");
-        }
-
-    }, 600);
-
-});
-
-/* =========================
-   INITIALIZATION
-========================= */
-
-// تمام محصولات فقط یک بار ساخته می‌شوند
-renderProducts();
-
-// دسته‌بندی‌ها در پشت صفحه انتخاب آماده‌اند
-renderCategories();
-
-// همه محصولات زیر صفحه انتخاب باقی می‌مانند
-updateVisibleProducts();
-
-// نمایش صفحه انتخاب
-menuChoiceScreen.classList.remove("hidden");
-
-document.body.style.overflow = "hidden";
-
-backButton.style.display = "none";
-
+/* ========================= اجرا ========================= */
+render();
