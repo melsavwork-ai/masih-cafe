@@ -902,7 +902,7 @@ function initializeMenu() {
 
     /* Start downloading all menu images immediately */
 
-    preloadAllImages();
+
 
     hideLoader();
 
