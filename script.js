@@ -209,42 +209,42 @@ const products = [
 
     {
         name: "شیک شکلات",
-        price: 360000,
+        price: 398000,
         image: "15.jpg",
         category: "شیک"
     },
 
     {
         name: "شیک بادام زمینی",
-        price: 370000,
+        price: 415000,
         image: "16.jpg",
         category: "شیک"
     },
 
     {
         name: "شیک موز شکلات",
-        price: 380000,
+        price: 425000,
         image: "17.jpg",
         category: "شیک"
     },
 
     {
         name: "شیک توت فرنگی وانیل",
-        price: 360000,
+        price: 398000,
         image: "18.jpg",
         category: "شیک"
     },
 
     {
         name: "شیک لوتوس",
-        price: 380000,
+        price: 428000,
         image: "19.jpg",
         category: "شیک"
     },
 
     {
         name: "شیک تیرامیسو",
-        price: 430000,
+        price: 478000,
         image: "63.jpg",
         category: "شیک"
     },
@@ -255,84 +255,91 @@ const products = [
 
     {
         name: "شیر موز",
-        price: 350000,
+        price: 385000,
         image: "20.jpg",
         category: "اسموتی"
     },
 
     {
         name: "کوک لیمون",
-        price: 270000,
+        price: 310000,
         image: "21.jpg",
         category: "اسموتی"
     },
 
     {
         name: "انبه توت فرنگی بستنی",
-        price: 390000,
+        price: 428000,
         image: "22.jpg",
         category: "اسموتی"
     },
 
     {
         name: "معجون ترش",
-        price: 380000,
+        price: 325000,
         image: "23.jpg",
         category: "اسموتی"
     },
 
     {
         name: "بلو بنانا",
-        price: 410000,
+        price: 448000,
         image: "24.jpg",
         category: "اسموتی"
     },
 
     {
         name: "موهیتو",
-        price: 310000,
+        price: 349000,
         image: "25.jpg",
         category: "اسموتی"
     },
 
     {
+        name: "لیوناد",
+        price: 349000,
+        image: "74.jpg",
+        category: "اسموتی"
+    },
+
+    {
         name: "رد موهیتو",
-        price: 320000,
+        price: 359000,
         image: "26.jpg",
         category: "اسموتی"
     },
 
     {
         name: "خیار سکنجبین",
-        price: 310000,
+        price: 350000,
         image: "27.jpg",
         category: "اسموتی"
     },
 
     {
         name: "سانرایز",
-        price: 390000,
+        price: 448000,
         image: "28.jpg",
         category: "اسموتی"
     },
 
     {
         name: "ژوال",
-        price: 310000,
+        price: 350000,
         image: "29.jpg",
         category: "اسموتی"
     },
 
     {
         name: "توایلایت",
-        price: 315000,
+        price: 355000,
         image: "30.jpg",
         category: "اسموتی"
     },
 
     {
         name: "وایولت",
-        price: 315000,
+        price: 355000,
         image: "31.jpg",
         category: "اسموتی"
     },
@@ -360,6 +367,27 @@ const products = [
         name: "سیب زمینی ویژه",
         price: 650000,
         image: "34.jpg",
+        category: "فرایز"
+    },
+
+    {
+        name: "سیب ناگت",
+        price: 668000,
+        image: "71.jpg",
+        category: "فرایز"
+    },
+
+    {
+        name: "سیب ناگت پنیری",
+        price: 710000,
+        image: "72.jpg",
+        category: "فرایز"
+    },
+
+    {
+        name: "سیب کوکتل",
+        price: 650000,
+        image: "73.jpg",
         category: "فرایز"
     },
 
@@ -459,29 +487,46 @@ const products = [
     },
 
     /* =========================
-       پنینی
+       اسنک
     ========================== */
 
     {
-        name: "پنینی مرغ",
-        price: null,
-        image: "46.jpg",
-        category: "پنینی"
+        name: "اسنک",
+        price: 260000,
+        image: "67.jpg",
+        category: "اسنک"
+    },
+
+    /* =========================
+       پیراشکی
+    ========================== */
+
+    {
+        name: "پیراشکی 4 تایی",
+        price: 650000,
+        image: "68.jpg",
+        category: "پیراشکی"
     },
 
     {
-        name: "پنینی ژامبون",
-        price: null,
-        image: "47.jpg",
-        category: "پنینی"
-    },
-
-    {
-        name: "پنینی گوشت",
-        price: null,
-        image: "48.jpg",
-        category: "پنینی"
+        name: "پیراشکی",
+        price: 198000,
+        image: "69.jpg",
+        category: "پیراشکی"
     }
+
+    /* =========================
+       پک کمبو اقتصادی
+    ========================== */,
+
+    {
+        name: "پک کمبو سیب نک",
+        price: 1150000,
+        image: "70.jpg",
+        category: "پک کمبو اقتصادی",
+        description: "اسنک,سیب کوکتل,لیموناد,کوک لیمون"
+    },
+
 ];
 
 
@@ -504,7 +549,9 @@ const cafeCategories = [
 
 const foodCategories = [
     "فرایز",
-    "پنینی"
+    "اسنک",
+    "پیراشکی",
+    "پک کمبو اقتصادی"
 ];
 
 /* ---------- STATE ---------- */
@@ -799,6 +846,12 @@ function renderProducts() {
                     <h3 class="product-name">
                         ${product.name}
                     </h3>
+
+                    ${product.description ? `
+    <p class="product-description">
+        ${product.description}
+    </p>
+` : ""}
 
                     ${price ? `
 
