@@ -974,7 +974,7 @@ function render() {
 
 ========================= */
 
-window.addEventListener("load", function () {
+window.addEventListener("DOMContentLoaded", function () {
 
     const loader = document.getElementById("loader");
 
